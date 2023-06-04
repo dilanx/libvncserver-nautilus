@@ -71,7 +71,7 @@ THREAD_ROUTINE_RETURN_TYPE ssh_proxy_loop(void *arg)
     /* Close listener once a connection got accepted */
     rfbCloseSocket(data->local_listensock);
 
-    shost = inet_ntoa(sin.sin_addr);
+    shost = ip4addr_ntoa(sin.sin_addr);
     sport = ntohs(sin.sin_port);
 
     printf("ssh_proxy_loop: forwarding connection from %s:%d here to remote %s:%d\n",
@@ -325,7 +325,7 @@ SshData* ssh_tunnel_open(const char *ssh_host,
     data->local_listenport = ntohs(sin.sin_port);
 
     printf("ssh_tunnel_open: waiting for TCP connection on %s:%d...\n",
-        inet_ntoa(sin.sin_addr), ntohs(sin.sin_port));
+        ip4addr_ntoa(sin.sin_addr), ntohs(sin.sin_port));
 
 
     /* Create the proxy thread */

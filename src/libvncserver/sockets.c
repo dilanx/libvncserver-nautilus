@@ -120,16 +120,16 @@ rfbNewConnectionFromSock(rfbScreenInfoPtr rfbScreen, rfbSocket sock)
       return FALSE;
     }
 
-    if (setsockopt(sock, IPPROTO_TCP, TCP_NODELAY,
+    if (lwip_setsockopt(sock, IPPROTO_TCP, TCP_NODELAY,
 		   (const char *)&one, sizeof(one)) < 0) {
-      rfbLogPerror("rfbCheckFds: setsockopt failed: can't set TCP_NODELAY flag, non TCP socket?");
+      rfbLogPerror("rfbCheckFds: lwip_setsockopt failed: can't set TCP_NODELAY flag, non TCP socket?");
     }
 
 #ifdef USE_LIBWRAP
-    if(!hosts_ctl("vnc",STRING_UNKNOWN,inet_ntoa(addr.sin_addr),
+    if(!hosts_ctl("vnc",STRING_UNKNOWN,ip4addr_ntoa(addr.sin_addr),
 		  STRING_UNKNOWN)) {
       rfbLog("Rejected connection from client %s\n",
-	     inet_ntoa(addr.sin_addr));
+	     ip4addr_ntoa(addr.sin_addr));
       rfbCloseSocket(sock);
       return FALSE;
     }
@@ -143,7 +143,7 @@ rfbNewConnectionFromSock(rfbScreenInfoPtr rfbScreen, rfbSocket sock)
       rfbLog("Got connection from client %s\n", host);
     }
 #else
-    rfbLog("Got connection from client %s\n", inet_ntoa(addr.sin_addr));
+    rfbLog("Got connection from client %s\n", ip4addr_ntoa(addr.sin_addr));
 #endif
 
     rfbNewClient(rfbScreen,sock);
@@ -197,9 +197,9 @@ rfbInitSockets(rfbScreenInfoPtr rfbScreen)
         if(!rfbSetNonBlocking(rfbScreen->inetdSock))
 	    return;
 
-	if (setsockopt(rfbScreen->inetdSock, IPPROTO_TCP, TCP_NODELAY,
+	if (lwip_setsockopt(rfbScreen->inetdSock, IPPROTO_TCP, TCP_NODELAY,
 		       (const char *)&one, sizeof(one)) < 0) {
-	    rfbLogPerror("setsockopt failed: can't set TCP_NODELAY flag, non TCP socket?");
+	    rfbLogPerror("lwip_setsockopt failed: can't set TCP_NODELAY flag, non TCP socket?");
 	}
 
     	FD_ZERO(&(rfbScreen->allFds));
@@ -629,9 +629,9 @@ rfbConnect(rfbScreenInfoPtr rfbScreen,
 	return RFB_INVALID_SOCKET;
     }
 
-    if (setsockopt(sock, IPPROTO_TCP, TCP_NODELAY,
+    if (lwip_setsockopt(sock, IPPROTO_TCP, TCP_NODELAY,
 		   (const char *)&one, sizeof(one)) < 0) {
-	rfbLogPerror("setsockopt failed: can't set TCP_NODELAY flag, non TCP socket?");
+	rfbLogPerror("lwip_setsockopt failed: can't set TCP_NODELAY flag, non TCP socket?");
     }
 
     /* AddEnabledDevice(sock); */
@@ -986,7 +986,7 @@ rfbListenOnTCPPort(int port,
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == RFB_INVALID_SOCKET) {
 	return RFB_INVALID_SOCKET;
     }
-    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
+    if (lwip_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
 		   (const char *)&one, sizeof(one)) < 0) {
 	rfbCloseSocket(sock);
 	return RFB_INVALID_SOCKET;
@@ -1038,16 +1038,16 @@ rfbListenOnTCP6Port(int port,
 
 #ifdef IPV6_V6ONLY
 	/* we have separate IPv4 and IPv6 sockets since some OS's do not support dual binding */
-	if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, (const char *)&one, sizeof(one)) < 0) {
-	  rfbLogPerror("rfbListenOnTCP6Port error in setsockopt IPV6_V6ONLY");
+	if (lwip_setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, (const char *)&one, sizeof(one)) < 0) {
+	  rfbLogPerror("rfbListenOnTCP6Port error in lwip_setsockopt IPV6_V6ONLY");
 	  rfbCloseSocket(sock);
 	  freeaddrinfo(servinfo);
 	  return RFB_INVALID_SOCKET;
 	}
 #endif
 
-	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one)) < 0) {
-	  rfbLogPerror("rfbListenOnTCP6Port: error in setsockopt SO_REUSEADDR");
+	if (lwip_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one)) < 0) {
+	  rfbLogPerror("rfbListenOnTCP6Port: error in lwip_setsockopt SO_REUSEADDR");
 	  rfbCloseSocket(sock);
 	  freeaddrinfo(servinfo);
 	  return RFB_INVALID_SOCKET;
@@ -1197,7 +1197,7 @@ rfbListenOnUDPPort(int port,
     if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == RFB_INVALID_SOCKET) {
 	return RFB_INVALID_SOCKET;
     }
-    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
+    if (lwip_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
 		   (const char *)&one, sizeof(one)) < 0) {
 	return RFB_INVALID_SOCKET;
     }

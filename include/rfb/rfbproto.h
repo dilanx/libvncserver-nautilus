@@ -104,7 +104,7 @@ typedef int8_t rfbBool;
 #define rfbSocket int
 #define SOCKET int /* LibVNCServer versions older than 0.9.13 defined this for non-Windows, so keep it here */
 #define RFB_INVALID_SOCKET (-1)
-#define _rfbCloseSocket close
+#define _rfbCloseSocket lwip_close
 typedef int8_t rfbBool;
 #undef FALSE
 #define FALSE 0

@@ -222,7 +222,7 @@ rfbHttpCheckFds(rfbScreenInfoPtr rfbScreen)
 	  host[0] = '\0';
 	}
 #else
-	memcpy(host, inet_ntoa(addr.sin_addr), sizeof(host));
+	memcpy(host, ip4addr_ntoa(addr.sin_addr), sizeof(host));
 #endif
 	if(!hosts_ctl("vnc",STRING_UNKNOWN, host,
 		      STRING_UNKNOWN)) {
@@ -397,7 +397,7 @@ httpProcessInput(rfbScreenInfoPtr rfbScreen)
     }
 #else
     rfbLog("httpd: get '%s' for %s\n", fname+1,
-	   inet_ntoa(addr.sin_addr));
+	   ip4addr_ntoa(addr.sin_addr));
 #endif
 
     /* Extract parameters from the URL string if necessary */

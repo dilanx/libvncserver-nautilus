@@ -251,10 +251,10 @@ rfbDefaultLog(const char *format, ...)
 
     time(&log_clock);
     strftime(buf, 255, "%d/%m/%Y %X ", localtime(&log_clock));
-    fprintf(stderr, "%s", buf);
+    // fprintf(stderr, "%s", buf);
 
-    vfprintf(stderr, format, args);
-    fflush(stderr);
+    // vfprintf(stderr, format, args);
+    // fflush(stderr);
 
     va_end(args);
     UNLOCK(logMutex);
@@ -984,7 +984,7 @@ rfbScreenInfoPtr rfbGetScreen(int* argc,char** argv,
    /* disable progressive updating per default */
    screen->progressiveSliceHeight = 0;
 
-   screen->listenInterface = htonl(INADDR_ANY);
+   screen->listenInterface = lwip_htonl(INADDR_ANY);
 
    screen->deferUpdateTime=5;
    screen->maxRectsPerUpdate=50;
@@ -1007,7 +1007,8 @@ rfbScreenInfoPtr rfbGetScreen(int* argc,char** argv,
 	   GetComputerName(screen->thisHost,&dummy);
    }
 #else
-   gethostname(screen->thisHost, 255);
+   //gethostname(screen->thisHost, 255);
+   strcpy(screen->thisHost, "host");
 #endif
 
    screen->paddedWidthInBytes = width*bytesPerPixel;
@@ -1301,11 +1302,11 @@ rfbUpdateClient(rfbClientPtr cl)
       if(screen->deferUpdateTime == 0) {
           rfbSendFramebufferUpdate(cl,cl->modifiedRegion);
       } else if(cl->startDeferring.tv_usec == 0) {
-        gettimeofday(&cl->startDeferring,NULL);
+        //gettimeofday(&cl->startDeferring,NULL);
         if(cl->startDeferring.tv_usec == 0)
           cl->startDeferring.tv_usec++;
       } else {
-        gettimeofday(&tv,NULL);
+        //gettimeofday(&tv,NULL);
         if(tv.tv_sec < cl->startDeferring.tv_sec /* at midnight */
            || ((tv.tv_sec-cl->startDeferring.tv_sec)*1000
                +(tv.tv_usec-cl->startDeferring.tv_usec)/1000)
@@ -1318,12 +1319,12 @@ rfbUpdateClient(rfbClientPtr cl)
 
     if (!cl->viewOnly && cl->lastPtrX >= 0) {
       if(cl->startPtrDeferring.tv_usec == 0) {
-        gettimeofday(&cl->startPtrDeferring,NULL);
+        //gettimeofday(&cl->startPtrDeferring,NULL);
         if(cl->startPtrDeferring.tv_usec == 0)
           cl->startPtrDeferring.tv_usec++;
       } else {
-        struct timeval tv;
-        gettimeofday(&tv,NULL);
+        //struct timeval tv;
+        //gettimeofday(&tv,NULL);
         if(tv.tv_sec < cl->startPtrDeferring.tv_sec /* at midnight */
            || ((tv.tv_sec-cl->startPtrDeferring.tv_sec)*1000
            +(tv.tv_usec-cl->startPtrDeferring.tv_usec)/1000)

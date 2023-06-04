@@ -340,7 +340,7 @@ rfbNewTCPOrUDPClient(rfbScreenInfoPtr rfbScreen,
       int one=1;
       size_t otherClientsCount = 0;
 
-      getpeername(sock, (struct sockaddr *)&addr, &addrlen);
+      lwip_getpeername(sock, (struct sockaddr *)&addr, &addrlen);
 #ifdef LIBVNCSERVER_IPv6
       if(getnameinfo((struct sockaddr*)&addr, addrlen, host, sizeof(host), NULL, 0, NI_NUMERICHOST) != 0) {
 	rfbLogPerror("rfbNewClient: error in getnameinfo");
@@ -349,7 +349,7 @@ rfbNewTCPOrUDPClient(rfbScreenInfoPtr rfbScreen,
       else
 	cl->host = strdup(host);
 #else
-      cl->host = strdup(inet_ntoa(addr.sin_addr));
+      cl->host = strdup(ip4addr_ntoa(addr.sin_addr));
 #endif
 
       iterator = rfbGetClientIterator(rfbScreen);
@@ -364,9 +364,9 @@ rfbNewTCPOrUDPClient(rfbScreenInfoPtr rfbScreen,
 	return NULL;
       }
 
-      if (setsockopt(sock, IPPROTO_TCP, TCP_NODELAY,
+      if (lwip_setsockopt(sock, IPPROTO_TCP, TCP_NODELAY,
 		     (char *)&one, sizeof(one)) < 0) {
-	rfbLogPerror("setsockopt failed: can't set TCP_NODELAY flag, non TCP socket?");
+	rfbLogPerror("lwip_setsockopt failed: can't set TCP_NODELAY flag, non TCP socket?");
       }
 
       FD_SET(sock,&(rfbScreen->allFds));

@@ -364,9 +364,9 @@ ConnectClientToTcpAddrWithTimeout(unsigned int host, int port, unsigned int time
     }
   }
 
-  if (setsockopt(sock, IPPROTO_TCP, TCP_NODELAY,
+  if (lwip_setsockopt(sock, IPPROTO_TCP, TCP_NODELAY,
 		 (char *)&one, sizeof(one)) < 0) {
-    rfbClientErr("ConnectToTcpAddr: setsockopt\n");
+    rfbClientErr("ConnectToTcpAddr: lwip_setsockopt\n");
     rfbCloseSocket(sock);
     return RFB_INVALID_SOCKET;
   }
@@ -439,9 +439,9 @@ ConnectClientToTcpAddr6WithTimeout(const char *hostname, int port, unsigned int 
     return RFB_INVALID_SOCKET;
   }
 
-  if (setsockopt(sock, IPPROTO_TCP, TCP_NODELAY,
+  if (lwip_setsockopt(sock, IPPROTO_TCP, TCP_NODELAY,
 		 (char *)&one, sizeof(one)) < 0) {
-    rfbClientErr("ConnectToTcpAddr: setsockopt\n");
+    rfbClientErr("ConnectToTcpAddr: lwip_setsockopt\n");
     rfbCloseSocket(sock);
     return RFB_INVALID_SOCKET;
   }
@@ -578,9 +578,9 @@ ListenAtTcpPortAndAddress(int port, const char *address)
     return RFB_INVALID_SOCKET;
   }
 
-  if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
+  if (lwip_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
 		 (const char *)&one, sizeof(one)) < 0) {
-    rfbClientErr("ListenAtTcpPort: setsockopt\n");
+    rfbClientErr("ListenAtTcpPort: lwip_setsockopt\n");
     rfbCloseSocket(sock);
     return RFB_INVALID_SOCKET;
   }
@@ -616,16 +616,16 @@ ListenAtTcpPortAndAddress(int port, const char *address)
 
 #ifdef IPV6_V6ONLY
     /* we have separate IPv4 and IPv6 sockets since some OS's do not support dual binding */
-    if (p->ai_family == AF_INET6 && setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, (char *)&one, sizeof(one)) < 0) {
-      rfbClientErr("ListenAtTcpPortAndAddress: error in setsockopt IPV6_V6ONLY: %s\n", strerror(errno));
+    if (p->ai_family == AF_INET6 && lwip_setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, (char *)&one, sizeof(one)) < 0) {
+      rfbClientErr("ListenAtTcpPortAndAddress: error in lwip_setsockopt IPV6_V6ONLY: %s\n", strerror(errno));
       rfbCloseSocket(sock);
       freeaddrinfo(servinfo);
       return RFB_INVALID_SOCKET;
     }
 #endif
 
-    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&one, sizeof(one)) < 0) {
-      rfbClientErr("ListenAtTcpPortAndAddress: error in setsockopt SO_REUSEADDR: %s\n", strerror(errno));
+    if (lwip_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&one, sizeof(one)) < 0) {
+      rfbClientErr("ListenAtTcpPortAndAddress: error in lwip_setsockopt SO_REUSEADDR: %s\n", strerror(errno));
       rfbCloseSocket(sock);
       freeaddrinfo(servinfo);
       return RFB_INVALID_SOCKET;
@@ -676,9 +676,9 @@ AcceptTcpConnection(rfbSocket listenSock)
     return RFB_INVALID_SOCKET;
   }
 
-  if (setsockopt(sock, IPPROTO_TCP, TCP_NODELAY,
+  if (lwip_setsockopt(sock, IPPROTO_TCP, TCP_NODELAY,
 		 (char *)&one, sizeof(one)) < 0) {
-    rfbClientErr("AcceptTcpConnection: setsockopt\n");
+    rfbClientErr("AcceptTcpConnection: lwip_setsockopt\n");
     rfbCloseSocket(sock);
     return RFB_INVALID_SOCKET;
   }
@@ -741,7 +741,7 @@ SetDSCP(rfbSocket sock, int dscp)
       return FALSE;
     }
 
-  if(setsockopt(sock, level, cmd, (void*)&dscp, sizeof(dscp)) != 0) {
+  if(lwip_setsockopt(sock, level, cmd, (void*)&dscp, sizeof(dscp)) != 0) {
     rfbClientErr("Setting socket QoS failed: %s\n", strerror(errno));
     return FALSE;
   }
