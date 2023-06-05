@@ -8,3 +8,87 @@
 - No messages will be printed to `stderr`.
 - The call to `gethostname` is removed and the hostname is "host" now.
 - `rfbScreenInfoPtr::deferUpdateTime` must be 0, since `gettimeofday` function calls will not work and non-zero values will require that.
+
+- Changes to be made
+  -  ld: src/built-in.o: in function `rfbProcessClientProtocolVersion':
+  -  rfbserver.c:(.text+0x181cf0): undefined reference to `__isoc99_sscanf'
+  -  ld: src/built-in.o: in function `rfbSendFileTransferChunk':
+  -  (.text+0x183cec): undefined reference to `select'
+  -  ld: (.text+0x183dbb): undefined reference to `close'
+  -  ld: (.text+0x183e69): undefined reference to `close'
+  -  ld: src/built-in.o: in function `rfbProcessClientNormalMessage':
+  -  rfbserver.c:(.text+0x1856c8): undefined reference to `rfbProcessFileTransfer'
+  -  ld: src/built-in.o: in function `sraSpanListPrint':
+  -  rfbregion.c:(.text+0x189631): undefined reference to `putchar'
+  -  ld: rfbregion.c:(.text+0x189662): undefined reference to `putchar'
+  -  ld: src/built-in.o: in function `rfbNewConnectionFromSock':
+  -  sockets.c:(.text+0x18b76c): undefined reference to `getpeername'
+  -  ld: src/built-in.o: in function `rfbCheckFds':
+  -  (.text+0x18c10d): undefined reference to `select'
+  -  ld: (.text+0x18c4ac): undefined reference to `recvfrom'
+  -  ld: (.text+0x18c596): undefined reference to `connect'
+  -  ld: src/built-in.o: in function `rfbProcessNewConnection':
+  -  (.text+0x18c908): undefined reference to `select'
+  -  ld: (.text+0x18ca12): undefined reference to `getrlimit'
+  -  ld: (.text+0x18ca61): undefined reference to `fcntl'
+  -  ld: (.text+0x18cb64): undefined reference to `accept'
+  -  ld: (.text+0x18cbad): undefined reference to `accept'
+  -  ld: src/built-in.o: in function `rfbReadExactTimeout':
+  -  (.text+0x18d0fb): undefined reference to `select'
+  -  ld: src/built-in.o: in function `rfbPeekExactTimeout':
+  -  (.text+0x18d25c): undefined reference to `recv'
+  -  ld: (.text+0x18d3cd): undefined reference to `select'
+  -  ld: src/built-in.o: in function `rfbWriteExact':
+  -  (.text+0x18d63c): undefined reference to `select'
+  -  ld: src/built-in.o: in function `rfbStringToAddr':
+  -  (.text+0x18d720): undefined reference to `htonl'
+  -  ld: (.text+0x18d74f): undefined reference to `htonl'
+  -  ld: (.text+0x18d763): undefined reference to `inet_addr'
+  -  ld: (.text+0x18d779): undefined reference to `htonl'
+  -  ld: (.text+0x18d789): undefined reference to `gethostbyname'
+  -  ld: src/built-in.o: in function `rfbListenOnTCPPort':
+  -  (.text+0x18d80d): undefined reference to `htons'
+  -  ld: (.text+0x18d82b): undefined reference to `socket'
+  -  ld: (.text+0x18d8a1): undefined reference to `bind'
+  -  ld: (.text+0x18d8d7): undefined reference to `listen'
+  -  ld: src/built-in.o: in function `rfbConnectToTcpAddr':
+  -  (.text+0x18d98c): undefined reference to `htons'
+  -  ld: (.text+0x18d99c): undefined reference to `inet_addr'
+  -  ld: (.text+0x18d9ac): undefined reference to `htonl'
+  -  ld: (.text+0x18d9bc): undefined reference to `gethostbyname'
+  -  ld: (.text+0x18da01): undefined reference to `socket'
+  -  ld: (.text+0x18da6a): undefined reference to `connect'
+  -  ld: src/built-in.o: in function `rfbListenOnUDPPort':
+  -  (.text+0x18dba2): undefined reference to `htons'
+  -  ld: (.text+0x18dbc0): undefined reference to `socket'
+  -  ld: (.text+0x18dc17): undefined reference to `bind'
+  -  ld: src/built-in.o: in function `rfbHttpCheckFds':
+  -  (.text+0x198379): undefined reference to `select'
+  -  ld: (.text+0x19856d): undefined reference to `accept'
+  -  ld: (.text+0x198610): undefined reference to `accept'
+  -  ld: src/built-in.o: in function `httpProcessInput':
+  -  httpd.c:(.text+0x198c95): undefined reference to `__isoc99_sscanf'
+  -  ld: httpd.c:(.text+0x198d43): undefined reference to `getpeername'
+  -  ld: src/built-in.o: in function `rfbEncryptAndStorePasswd':
+  -  (.text+0x19c411): undefined reference to `fchmod'
+  -  ld: src/built-in.o: in function `rfbRandomBytes':
+  -  (.text+0x19c624): undefined reference to `getpid'
+  -  ld: (.text+0x19c62d): undefined reference to `srandom'
+  -  ld: (.text+0x19c642): undefined reference to `random'
+  -  ld: src/built-in.o: in function `sock_set_nonblocking':
+  -  (.text+0x19c879): undefined reference to `fcntl'
+  -  ld: (.text+0x19c8b3): undefined reference to `fcntl'
+  -  ld: src/built-in.o: in function `sock_wait_for_connected':
+  -  (.text+0x19ca79): undefined reference to `select'
+  -  ld: (.text+0x19cab3): undefined reference to `getsockopt'
+  -  ld: src/built-in.o: in function `rfbUsage':
+  -  (.text+0x19caf9): undefined reference to `stderr'
+  -  ld: (.text+0x19cb1c): undefined reference to `stderr'
+  -  ld: (.text+0x19cb3f): undefined reference to `stderr'
+  -  ld: (.text+0x19cb62): undefined reference to `stderr'
+  -  ld: (.text+0x19cb85): undefined reference to `stderr'
+  -  ld: src/built-in.o:(.text+0x19cba8): more undefined references to `stderr' follow
+  -  ld: src/built-in.o: in function `rfbProcessArguments':
+  -  (.text+0x19d106): undefined reference to `__isoc99_sscanf'
+  -  make: *** [Makefile:760: nautilus.bin] Error 1
+-
