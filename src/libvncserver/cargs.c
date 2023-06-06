@@ -124,10 +124,10 @@ rfbProcessArguments(rfbScreenInfoPtr rfbScreen,int* argc, char *argv[])
 	    }
 	    //sscanf(argv[++i],"%d.%d", &rfbScreen->protocolMajorVersion, &rfbScreen->protocolMinorVersion);
 	} else if (strcmp(argv[i], "-passwd") == 0) {  /* -passwd password */
-	    char **passwds = malloc(sizeof(char**)*2);
+	    char **passwds = kmem_malloc(sizeof(char**)*2);
 	    if (!passwds || i + 1 >= *argc) {
 		rfbUsage();
-		free(passwds);
+		kmem_free(passwds);
 		return FALSE;
 	    }
 	    passwds[0] = argv[++i];

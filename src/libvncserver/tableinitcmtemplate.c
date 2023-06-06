@@ -51,8 +51,8 @@ rfbInitColourMapSingleTableOUT(char **table, rfbPixelFormat *in,
     uint32_t nEntries = 1 << in->bitsPerPixel;
     int shift = colourMap->is16?16:8;
 
-    if (*table) free(*table);
-    *table = (char *)malloc(nEntries * sizeof(OUT_T));
+    if (*table) kmem_free(*table);
+    *table = (char *)kmem_malloc(nEntries * sizeof(OUT_T));
     t = (OUT_T *)*table;
 
     for (i = 0; i < nEntries; i++) {

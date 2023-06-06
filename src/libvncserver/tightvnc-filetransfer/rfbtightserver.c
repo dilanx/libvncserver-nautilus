@@ -452,7 +452,7 @@ rfbTightExtensionClientClose(rfbClientPtr cl, void* data) {
 	if(data != NULL) {
 		CloseUndoneFileUpload(cl, data);
 		CloseUndoneFileDownload(cl, data);
-		free(data);
+		kmem_free(data);
 	}
 }
 
@@ -497,7 +497,7 @@ rfbTightProcessArg(int argc, char *argv[]) {
 void
 rfbHandleSecTypeTight(rfbClientPtr cl) {
 
-    rfbTightClientPtr rtcp = (rfbTightClientPtr) malloc(sizeof(rfbTightClientRec));
+    rfbTightClientPtr rtcp = (rfbTightClientPtr) kmem_malloc(sizeof(rfbTightClientRec));
 
     rfbLog("tightvnc-filetransfer/rfbHandleSecTypeTight\n");
 

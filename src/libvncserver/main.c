@@ -190,7 +190,7 @@ rfbBool rfbDisableExtension(rfbClientPtr cl, rfbProtocolExtension* extension)
 	for(extData = cl->extensions; extData; extData = extData->next) {
 		if(extData->extension == extension) {
 			if(extData->data)
-				free(extData->data);
+				kmem_free(extData->data);
 			if(prevData == NULL)
 				cl->extensions = extData->next;
 			else
@@ -799,7 +799,7 @@ static rfbBool rfbDefaultPasswordCheck(rfbClientPtr cl,const char* response,int 
     passwd[i] = '\0';
   }
 
-  free(passwd);
+  kmem_free(passwd);
 
   if (memcmp(cl->authChallenge, response, len) != 0) {
     rfbErr("authProcessClientMessage: authentication failed from %s\n",
@@ -997,7 +997,7 @@ rfbScreenInfoPtr rfbGetScreen(int* argc,char** argv,
    screen->permitFileTransfer = FALSE;
 
    if(!rfbProcessArguments(screen,argc,argv)) {
-     free(screen);
+     kmem_free(screen);
      return NULL;
    }
 
@@ -1158,7 +1158,7 @@ void rfbScreenCleanup(rfbScreenInfoPtr screen)
   }
   rfbReleaseClientIterator(i);
     
-#define FREE_IF(x) if(screen->x) free(screen->x)
+#define FREE_IF(x) if(screen->x) kmem_free(screen->x)
   FREE_IF(colourMap.data.bytes);
   FREE_IF(underCursorBuffer);
   TINI_MUTEX(screen->cursorMutex);
@@ -1174,12 +1174,12 @@ void rfbScreenCleanup(rfbScreenInfoPtr screen)
       rfbScreenInfoPtr ptr;
       ptr = screen->scaledScreenNext;
       screen->scaledScreenNext = ptr->scaledScreenNext;
-      free(ptr->frameBuffer);
-      free(ptr);
+      kmem_free(ptr->frameBuffer);
+      kmem_free(ptr);
   }
 
 #endif
-  free(screen);
+  kmem_free(screen);
 }
 
 void rfbInitServer(rfbScreenInfoPtr screen)

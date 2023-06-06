@@ -110,7 +110,7 @@ rfbBool rfbSendRectEncodingZRLE(rfbClientPtr cl, int x, int y, int w, int h)
   char *zrleBeforeBuf;
 
   if (cl->zrleBeforeBuf == NULL) {
-	cl->zrleBeforeBuf = (char *) malloc(rfbZRLETileWidth * rfbZRLETileHeight * 4 + 4);
+	cl->zrleBeforeBuf = (char *) kmem_malloc(rfbZRLETileWidth * rfbZRLETileHeight * 4 + 4);
   }
   zrleBeforeBuf = cl->zrleBeforeBuf;
 
@@ -245,12 +245,12 @@ void rfbFreeZrleData(rfbClientPtr cl)
 	cl->zrleData = NULL;
 
 	if (cl->zrleBeforeBuf) {
-		free(cl->zrleBeforeBuf);
+		kmem_free(cl->zrleBeforeBuf);
 	}
 	cl->zrleBeforeBuf = NULL;
 
 	if (cl->paletteHelper) {
-		free(cl->paletteHelper);
+		kmem_free(cl->paletteHelper);
 	}
 	cl->paletteHelper = NULL;
 }

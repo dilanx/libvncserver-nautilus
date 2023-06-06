@@ -32,7 +32,7 @@ void sraSpanListDestroy(sraSpanList *list);
 
 static sraSpan *
 sraSpanCreate(int start, int end, const sraSpanList *subspan) {
-  sraSpan *item = (sraSpan*)malloc(sizeof(sraSpan));
+  sraSpan *item = (sraSpan*)kmem_malloc(sizeof(sraSpan));
   if (!item) return NULL;
   item->_next = item->_prev = NULL;
   item->start = start;
@@ -80,7 +80,7 @@ sraSpanRemove(sraSpan *span) {
 static void
 sraSpanDestroy(sraSpan *span) {
   if (span->subspan) sraSpanListDestroy(span->subspan);
-  free(span);
+  kmem_free(span);
 }
 
 #ifdef DEBUG
@@ -123,7 +123,7 @@ sraSpanPrint(const sraSpan *s) {
 
 static sraSpanList *
 sraSpanListCreate(void) {
-  sraSpanList *item = (sraSpanList*)malloc(sizeof(sraSpanList));
+  sraSpanList *item = (sraSpanList*)kmem_malloc(sizeof(sraSpanList));
   if (!item) return NULL;
   item->front._next = &(item->back);
   item->front._prev = NULL;
@@ -157,7 +157,7 @@ sraSpanListDestroy(sraSpanList *list) {
     sraSpanRemove(curr);
     sraSpanDestroy(curr);
   }
-  free(list);
+  kmem_free(list);
 }
 
 static void
@@ -690,7 +690,7 @@ sraRectangleIterator *sraRgnGetIterator(sraRegion *s)
 #define DEFSIZE 4
 #define DEFSTEP 8
   sraRectangleIterator *i =
-    (sraRectangleIterator*)malloc(sizeof(sraRectangleIterator));
+    (sraRectangleIterator*)kmem_malloc(sizeof(sraRectangleIterator));
   if(!i)
     return NULL;
 
@@ -698,9 +698,9 @@ sraRectangleIterator *sraRgnGetIterator(sraRegion *s)
      the sraSpan in the first level. the second sPtr is the pointer to
      the sraRegion.back. The third and fourth sPtr are for the second
      recursion level and so on. */
-  i->sPtrs = (sraSpan**)malloc(sizeof(sraSpan*)*DEFSIZE);
+  i->sPtrs = (sraSpan**)kmem_malloc(sizeof(sraSpan*)*DEFSIZE);
   if(!i->sPtrs) {
-    free(i);
+    kmem_free(i);
     return NULL;
   }
   i->ptrSize = DEFSIZE;
@@ -780,8 +780,8 @@ rfbBool sraRgnIteratorNext(sraRectangleIterator* i,sraRect* r)
 
 void sraRgnReleaseIterator(sraRectangleIterator* i)
 {
-  free(i->sPtrs);
-  free(i);
+  kmem_free(i->sPtrs);
+  kmem_free(i);
 }
 
 void

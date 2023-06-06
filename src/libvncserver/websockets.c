@@ -170,15 +170,15 @@ webSocketsHandshake(rfbClientPtr cl, char *scheme)
     char sec_ws_version = 0;
     ws_ctx_t *wsctx = NULL;
 
-    buf = (char *) malloc(WEBSOCKETS_MAX_HANDSHAKE_LEN);
+    buf = (char *) kmem_malloc(WEBSOCKETS_MAX_HANDSHAKE_LEN);
     if (!buf) {
-        rfbLogPerror("webSocketsHandshake: malloc");
+        rfbLogPerror("webSocketsHandshake: kmem_malloc");
         return FALSE;
     }
-    response = (char *) malloc(WEBSOCKETS_MAX_HANDSHAKE_LEN);
+    response = (char *) kmem_malloc(WEBSOCKETS_MAX_HANDSHAKE_LEN);
     if (!response) {
-        free(buf);
-        rfbLogPerror("webSocketsHandshake: malloc");
+        kmem_free(buf);
+        rfbLogPerror("webSocketsHandshake: kmem_malloc");
         return FALSE;
     }
 
@@ -195,8 +195,8 @@ webSocketsHandshake(rfbClientPtr cl, char *scheme)
                 rfbLogPerror("webSocketsHandshake: read");
             }
 
-            free(response);
-            free(buf);
+            kmem_free(response);
+            kmem_free(buf);
             return FALSE;
         }
 
@@ -214,8 +214,8 @@ webSocketsHandshake(rfbClientPtr cl, char *scheme)
                             rfbLog("webSocketsHandshake: client gone\n");
                         else
                             rfbLogPerror("webSocketsHandshake: read");
-                        free(response);
-                        free(buf);
+                        kmem_free(response);
+                        kmem_free(buf);
                         return FALSE;
                     }
                     len += 8;
@@ -270,22 +270,22 @@ webSocketsHandshake(rfbClientPtr cl, char *scheme)
      * a final standard is established -- removed now */
     if (!sec_ws_version) {
         rfbErr("Hixie no longer supported\n");
-        free(response);
-        free(buf);
+        kmem_free(response);
+        kmem_free(buf);
         return FALSE;
     } 
 
     if (!sec_ws_key) {
         rfbErr("webSocketsHandshake: sec-websocket-key is missing\n");
-        free(response);
-        free(buf);
+        kmem_free(response);
+        kmem_free(buf);
         return FALSE;
     }
 
     if (!(path && host && (origin || sec_ws_origin))) {
         rfbErr("webSocketsHandshake: incomplete client handshake\n");
-        free(response);
-        free(buf);
+        kmem_free(response);
+        kmem_free(buf);
         return FALSE;
     }
 
@@ -320,13 +320,13 @@ webSocketsHandshake(rfbClientPtr cl, char *scheme)
 
     if (rfbWriteExact(cl, response, len) < 0) {
         rfbErr("webSocketsHandshake: failed sending WebSockets response\n");
-        free(response);
-        free(buf);
+        kmem_free(response);
+        kmem_free(buf);
         return FALSE;
     }
     /* rfbLog("webSocketsHandshake: %s\n", response); */
-    free(response);
-    free(buf);
+    kmem_free(response);
+    kmem_free(buf);
 
     wsctx = calloc(1, sizeof(ws_ctx_t));
     if (!wsctx) {

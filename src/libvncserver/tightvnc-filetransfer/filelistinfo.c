@@ -69,7 +69,7 @@ AddFileListItemInfo(FileListInfoPtr fileListInfoPtr, char* name,
 	fileListItemInfoPtr[fileListInfoPtr->numEntries].data = data;
 
 	if(fileListInfoPtr->pEntries != NULL) {
-	    free(fileListInfoPtr->pEntries);
+	    kmem_free(fileListInfoPtr->pEntries);
 	    fileListInfoPtr->pEntries = NULL;	
 	}
 
@@ -125,7 +125,7 @@ void
 FreeFileListInfo(FileListInfo fileListInfo)
 {
 	if(fileListInfo.pEntries != NULL) {
-		free(fileListInfo.pEntries);
+		kmem_free(fileListInfo.pEntries);
 		fileListInfo.pEntries = NULL;
 	}
 	fileListInfo.numEntries = 0;

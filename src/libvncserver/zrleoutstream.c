@@ -27,7 +27,7 @@
 
 static rfbBool zrleBufferAlloc(zrleBuffer *buffer, int size)
 {
-  buffer->ptr = buffer->start = malloc(size);
+  buffer->ptr = buffer->start = kmem_malloc(size);
   if (buffer->start == NULL) {
     buffer->end = NULL;
     return FALSE;
@@ -41,7 +41,7 @@ static rfbBool zrleBufferAlloc(zrleBuffer *buffer, int size)
 static void zrleBufferFree(zrleBuffer *buffer)
 {
   if (buffer->start)
-    free(buffer->start);
+    kmem_free(buffer->start);
   buffer->start = buffer->ptr = buffer->end = NULL;
 }
 
@@ -70,18 +70,18 @@ zrleOutStream *zrleOutStreamNew(void)
 {
   zrleOutStream *os;
 
-  os = malloc(sizeof(zrleOutStream));
+  os = kmem_malloc(sizeof(zrleOutStream));
   if (os == NULL)
     return NULL;
 
   if (!zrleBufferAlloc(&os->in, ZRLE_IN_BUFFER_SIZE)) {
-    free(os);
+    kmem_free(os);
     return NULL;
   }
 
   if (!zrleBufferAlloc(&os->out, ZRLE_OUT_BUFFER_SIZE)) {
     zrleBufferFree(&os->in);
-    free(os);
+    kmem_free(os);
     return NULL;
   }
 
@@ -90,7 +90,7 @@ zrleOutStream *zrleOutStreamNew(void)
   os->zs.opaque = Z_NULL;
   if (deflateInit(&os->zs, Z_DEFAULT_COMPRESSION) != Z_OK) {
     zrleBufferFree(&os->in);
-    free(os);
+    kmem_free(os);
     return NULL;
   }
 
@@ -102,7 +102,7 @@ void zrleOutStreamFree (zrleOutStream *os)
   deflateEnd(&os->zs);
   zrleBufferFree(&os->in);
   zrleBufferFree(&os->out);
-  free(os);
+  kmem_free(os);
 }
 
 rfbBool zrleOutStreamFlush(zrleOutStream *os)

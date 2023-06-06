@@ -89,7 +89,7 @@ struct rfbssl_ctx *rfbssl_init_global(char *key, char *cert)
     int ret = GNUTLS_E_SUCCESS;
     struct rfbssl_ctx *ctx = NULL;
 
-    if (NULL == (ctx = malloc(sizeof(struct rfbssl_ctx)))) {
+    if (NULL == (ctx = kmem_malloc(sizeof(struct rfbssl_ctx)))) {
 	return NULL;
     } else if (GNUTLS_E_SUCCESS != (ret = gnutls_global_init())) {
 	/* */
@@ -114,7 +114,7 @@ struct rfbssl_ctx *rfbssl_init_global(char *key, char *cert)
 	return ctx;
     }
 
-    free(ctx);
+    kmem_free(ctx);
     return NULL;
 }
 

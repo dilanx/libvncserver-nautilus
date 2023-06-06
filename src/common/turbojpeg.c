@@ -441,7 +441,7 @@ DLLEXPORT int DLLCALL tjDestroy(tjhandle handle)
 	if(setjmp(this->jerr.setjmp_buffer)) return -1;
 	if(this->init&COMPRESS) jpeg_destroy_compress(cinfo);
 	if(this->init&DECOMPRESS) jpeg_destroy_decompress(dinfo);
-	free(this);
+	kmem_free(this);
 	return 0;
 }
 
@@ -468,7 +468,7 @@ static tjhandle _tjInitCompress(tjinstance *this)
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
 		/* If we get here, the JPEG code has signaled an error. */
-		if(this) free(this);
+		if(this) kmem_free(this);
 		return NULL;
 	}
 
@@ -485,7 +485,7 @@ static tjhandle _tjInitCompress(tjinstance *this)
 DLLEXPORT tjhandle DLLCALL tjInitCompress(void)
 {
 	tjinstance *this=NULL;
-	if((this=(tjinstance *)malloc(sizeof(tjinstance)))==NULL)
+	if((this=(tjinstance *)kmem_malloc(sizeof(tjinstance)))==NULL)
 	{
 		snprintf(errStr, JMSG_LENGTH_MAX,
 			"tjInitCompress(): Memory allocation failure");
@@ -566,7 +566,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 	#ifndef JCS_EXTENSIONS
 	if(pixelFormat!=TJPF_GRAY)
 	{
-		rgbBuf=(unsigned char *)malloc(width*height*RGB_PIXELSIZE);
+		rgbBuf=(unsigned char *)kmem_malloc(width*height*RGB_PIXELSIZE);
 		if(!rgbBuf) _throw("tjCompress2(): Memory allocation failure");
 		srcBuf=toRGB(srcBuf, width, pitch, height, pixelFormat, rgbBuf);
 		pitch=width*RGB_PIXELSIZE;
@@ -587,7 +587,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 	this->jdst.free_in_buffer=tjBufSize(width, height, jpegSubsamp);
 
 	jpeg_start_compress(cinfo, TRUE);
-	if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)*height))==NULL)
+	if((row_pointer=(JSAMPROW *)kmem_malloc(sizeof(JSAMPROW)*height))==NULL)
 		_throw("tjCompress2(): Memory allocation failure");
 	for(i=0; i<height; i++)
 	{
@@ -606,9 +606,9 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
 	bailout:
 	if(cinfo->global_state>CSTATE_START) jpeg_abort_compress(cinfo);
 	#ifndef JCS_EXTENSIONS
-	if(rgbBuf) free(rgbBuf);
+	if(rgbBuf) kmem_free(rgbBuf);
 	#endif
-	if(row_pointer) free(row_pointer);
+	if(row_pointer) kmem_free(row_pointer);
 	return retval;
 }
 
@@ -653,7 +653,7 @@ static tjhandle _tjInitDecompress(tjinstance *this)
 	if(setjmp(this->jerr.setjmp_buffer))
 	{
 		/* If we get here, the JPEG code has signaled an error. */
-		if(this) free(this);
+		if(this) kmem_free(this);
 		return NULL;
 	}
 
@@ -672,7 +672,7 @@ static tjhandle _tjInitDecompress(tjinstance *this)
 DLLEXPORT tjhandle DLLCALL tjInitDecompress(void)
 {
 	tjinstance *this;
-	if((this=(tjinstance *)malloc(sizeof(tjinstance)))==NULL)
+	if((this=(tjinstance *)kmem_malloc(sizeof(tjinstance)))==NULL)
 	{
 		snprintf(errStr, JMSG_LENGTH_MAX,
 			"tjInitDecompress(): Memory allocation failure");
@@ -813,14 +813,14 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 			RGB_BLUE!=tjBlueOffset[pixelFormat] ||
 			RGB_PIXELSIZE!=tjPixelSize[pixelFormat]))
 	{
-		rgbBuf=(unsigned char *)malloc(width*height*3);
+		rgbBuf=(unsigned char *)kmem_malloc(width*height*3);
 		if(!rgbBuf) _throw("tjDecompress2(): Memory allocation failure");
 		_pitch=pitch;  pitch=width*3;
 		_dstBuf=dstBuf;  dstBuf=rgbBuf;
 	}
 	#endif
 
-	if((row_pointer=(JSAMPROW *)malloc(sizeof(JSAMPROW)
+	if((row_pointer=(JSAMPROW *)kmem_malloc(sizeof(JSAMPROW)
 		*dinfo->output_height))==NULL)
 		_throw("tjDecompress2(): Memory allocation failure");
 	for(i=0; i<(int)dinfo->output_height; i++)
@@ -843,9 +843,9 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle, unsigned char *jpegBuf,
 	bailout:
 	if(dinfo->global_state>DSTATE_START) jpeg_abort_decompress(dinfo);
 	#ifndef JCS_EXTENSIONS
-	if(rgbBuf) free(rgbBuf);
+	if(rgbBuf) kmem_free(rgbBuf);
 	#endif
-	if(row_pointer) free(row_pointer);
+	if(row_pointer) kmem_free(row_pointer);
 	return retval;
 }
 

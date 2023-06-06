@@ -64,7 +64,7 @@ rfbSendRectEncodingRRE(rfbClientPtr cl,
 
     if (!cl->beforeEncBuf || cl->beforeEncBufSize < maxRawSize) {
         if (cl->beforeEncBuf == NULL)
-            cl->beforeEncBuf = (char *)malloc(maxRawSize);
+            cl->beforeEncBuf = (char *)kmem_malloc(maxRawSize);
         else {
             char *reallocedBeforeEncBuf = (char *)realloc(cl->beforeEncBuf, maxRawSize);
             if (!reallocedBeforeEncBuf) return FALSE;
@@ -76,7 +76,7 @@ rfbSendRectEncodingRRE(rfbClientPtr cl,
 
     if (!cl->afterEncBuf || cl->afterEncBufSize < maxRawSize) {
         if (cl->afterEncBuf == NULL)
-            cl->afterEncBuf = (char *)malloc(maxRawSize);
+            cl->afterEncBuf = (char *)kmem_malloc(maxRawSize);
         else {
             char *reallocedAfterEncBuf = (char *)realloc(cl->afterEncBuf, maxRawSize);
             if (!reallocedAfterEncBuf) return FALSE;

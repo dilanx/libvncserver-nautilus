@@ -124,11 +124,11 @@ rfbDecryptPasswdFromFile(char *fname)
 {
     FILE *fp;
     int i, ch;
-    unsigned char *passwd = (unsigned char *)malloc(9);
+    unsigned char *passwd = (unsigned char *)kmem_malloc(9);
     int out_len;
 
     if (!passwd || (fp = fopen(fname,"r")) == NULL) {
-	free(passwd);
+	kmem_free(passwd);
 	return NULL;
     }
 
@@ -136,7 +136,7 @@ rfbDecryptPasswdFromFile(char *fname)
 	ch = getc(fp);
 	if (ch == EOF) {
 	    fclose(fp);
-	    free(passwd);
+	    kmem_free(passwd);
 	    return NULL;
 	}
 	passwd[i] = ch;

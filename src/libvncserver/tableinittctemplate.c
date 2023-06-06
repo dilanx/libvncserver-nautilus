@@ -65,8 +65,8 @@ rfbInitTrueColourSingleTableOUT (char **table, rfbPixelFormat *in,
     OUT_T *t;
     int nEntries = 1 << in->bitsPerPixel;
 
-    if (*table) free(*table);
-    *table = (char *)malloc(nEntries * sizeof(OUT_T));
+    if (*table) kmem_free(*table);
+    *table = (char *)kmem_malloc(nEntries * sizeof(OUT_T));
     t = (OUT_T *)*table;
 
     for (i = 0; i < nEntries; i++) {
@@ -103,8 +103,8 @@ rfbInitTrueColourRGBTablesOUT (char **table, rfbPixelFormat *in,
     OUT_T *greenTable;
     OUT_T *blueTable;
 
-    if (*table) free(*table);
-    *table = (char *)malloc((in->redMax + in->greenMax + in->blueMax + 3)
+    if (*table) kmem_free(*table);
+    *table = (char *)kmem_malloc((in->redMax + in->greenMax + in->blueMax + 3)
                             * sizeof(OUT_T));
     redTable = (OUT_T *)*table;
     greenTable = redTable + in->redMax + 1;

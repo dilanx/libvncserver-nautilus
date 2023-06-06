@@ -33,7 +33,7 @@
 
 void rfbFreeUltraData(rfbClientPtr cl) {
   if (cl->compStreamInitedLZO) {
-    free(cl->lzoWrkMem);
+    kmem_free(cl->lzoWrkMem);
     cl->compStreamInitedLZO=FALSE;
   }
 }
@@ -60,7 +60,7 @@ rfbSendOneRectEncodingUltra(rfbClientPtr cl,
 
     if (!cl->beforeEncBuf || cl->beforeEncBufSize < maxRawSize) {
         if (cl->beforeEncBuf == NULL)
-            cl->beforeEncBuf = (char *)malloc(maxRawSize);
+            cl->beforeEncBuf = (char *)kmem_malloc(maxRawSize);
         else {
             char *reallocedBeforeEncBuf = (char *)realloc(cl->beforeEncBuf, maxRawSize);
             if (!reallocedBeforeEncBuf) return FALSE;
@@ -78,7 +78,7 @@ rfbSendOneRectEncodingUltra(rfbClientPtr cl,
 
     if (!cl->afterEncBuf || cl->afterEncBufSize < (int)maxCompSize) {
         if (cl->afterEncBuf == NULL)
-            cl->afterEncBuf = (char *)malloc(maxCompSize);
+            cl->afterEncBuf = (char *)kmem_malloc(maxCompSize);
         else {
             char *reallocedAfterEncBuf = (char *)realloc(cl->afterEncBuf, maxCompSize);
             if (!reallocedAfterEncBuf) return FALSE;
@@ -106,7 +106,7 @@ rfbSendOneRectEncodingUltra(rfbClientPtr cl,
         /* Work-memory needed for compression. Allocate memory in units
          * of `lzo_align_t' (instead of `char') to make sure it is properly aligned.
          */  
-        cl->lzoWrkMem = malloc(sizeof(lzo_align_t) * (((LZO1X_1_MEM_COMPRESS) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t)));
+        cl->lzoWrkMem = kmem_malloc(sizeof(lzo_align_t) * (((LZO1X_1_MEM_COMPRESS) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t)));
     }
 
     /* Perform the compression here. */

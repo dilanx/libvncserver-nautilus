@@ -52,7 +52,7 @@ int rfbssl_init(rfbClientPtr cl)
       keyfile = cl->screen->sslcertfile;
     }
 
-    if (NULL == (ctx = malloc(sizeof(struct rfbssl_ctx)))) {
+    if (NULL == (ctx = kmem_malloc(sizeof(struct rfbssl_ctx)))) {
 	rfbErr("OOM\n");
     } else if (!cl->screen->sslcertfile || !cl->screen->sslcertfile[0]) {
 	rfbErr("SSL connection but no cert specified\n");
@@ -129,7 +129,7 @@ void rfbssl_destroy(rfbClientPtr cl)
 {
     struct rfbssl_ctx *ctx = (struct rfbssl_ctx *)cl->sslctx;
     if (ctx->ssl)
-	SSL_free(ctx->ssl);
+	SSL_kmem_free(ctx->ssl);
     if (ctx->ssl_ctx)
-	SSL_CTX_free(ctx->ssl_ctx);
+	SSL_CTX_kmem_free(ctx->ssl_ctx);
 }

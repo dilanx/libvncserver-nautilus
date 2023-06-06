@@ -569,7 +569,7 @@ rfbCloseClient(rfbClientPtr cl)
 	/* Has to happen before socket close as the SSL implementation might send a goodbye */
 	if (cl->sslctx)
 	    rfbssl_destroy(cl);
-	free(cl->wspath);
+	kmem_free(cl->wspath);
 #endif
       }
     TSIGNAL(cl->updateCond);

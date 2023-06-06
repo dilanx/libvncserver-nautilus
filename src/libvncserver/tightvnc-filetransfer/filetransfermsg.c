@@ -76,7 +76,7 @@ FreeFileTransferMsg(FileTransferMsg ftm)
 {
 
 	if(ftm.data != NULL) {
-		free(ftm.data);
+		kmem_free(ftm.data);
 		ftm.data = NULL;
 	}
 
@@ -186,7 +186,7 @@ CreateFileListInfo(FileListInfoPtr pFileListInfo, char* path, int flag)
 	/* Create a search string, like C:\folder\* */
 
 	pathLen = strlen(path);
-	basePath = malloc(pathLen + 3);
+	basePath = kmem_malloc(pathLen + 3);
 	memcpy(basePath, path, pathLen);
 	basePathLength = pathLen;
 	basePath[basePathLength] = '\\';
@@ -244,7 +244,7 @@ CreateFileListInfo(FileListInfoPtr pFileListInfo, char* path, int flag)
 		FindClose(findHandle);
 	}
 
-	free(basePath);
+	kmem_free(basePath);
 	
 	return SUCCESS;
 }

@@ -173,7 +173,7 @@ rfbStatList *rfbStatLookupEncoding(rfbClientPtr cl, uint32_t type)
         if (ptr->type==type) return ptr;
     }
     /* Well, we are here... need to *CREATE* an entry */
-    ptr = (rfbStatList *)malloc(sizeof(rfbStatList));
+    ptr = (rfbStatList *)kmem_malloc(sizeof(rfbStatList));
     if (ptr!=NULL)
     {
         memset((char *)ptr, 0, sizeof(rfbStatList));
@@ -195,7 +195,7 @@ rfbStatList *rfbStatLookupMessage(rfbClientPtr cl, uint32_t type)
         if (ptr->type==type) return ptr;
     }
     /* Well, we are here... need to *CREATE* an entry */
-    ptr = (rfbStatList *)malloc(sizeof(rfbStatList));
+    ptr = (rfbStatList *)kmem_malloc(sizeof(rfbStatList));
     if (ptr!=NULL)
     {
         memset((char *)ptr, 0, sizeof(rfbStatList));
@@ -363,13 +363,13 @@ void rfbResetStats(rfbClientPtr cl)
     {
         ptr = cl->statEncList;
         cl->statEncList = ptr->Next;
-        free(ptr);
+        kmem_free(ptr);
     }
     while (cl->statMsgList!=NULL)
     {
         ptr = cl->statMsgList;
         cl->statMsgList = ptr->Next;
-        free(ptr);
+        kmem_free(ptr);
     }
 }
 

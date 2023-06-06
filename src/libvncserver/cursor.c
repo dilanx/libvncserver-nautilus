@@ -269,7 +269,7 @@ rfbCursorPtr rfbMakeXCursor(int width,int height,char* cursorString,char* maskSt
    
    cursor->source = (unsigned char*)calloc(w,height);
    if (!cursor->source) {
-       free(cursor);
+       kmem_free(cursor);
        return NULL;
    }
    cursor->cleanupSource = TRUE;
@@ -280,8 +280,8 @@ rfbCursorPtr rfbMakeXCursor(int width,int height,char* cursorString,char* maskSt
    if(maskString) {
       cursor->mask = (unsigned char*)calloc(w,height);
       if (!cursor->mask) {
-          free(cursor->source);
-          free(cursor);
+          kmem_free(cursor->source);
+          kmem_free(cursor);
           return NULL;
       }
       for(j=0,cp=maskString;j<height;j++)
@@ -329,8 +329,8 @@ char* rfbMakeMaskFromAlphaSource(int width,int height,unsigned char* alphaSource
 	unsigned char* result=(unsigned char*)calloc(maskStride,height);
 	
 	if (!error || !result) {
-		free(error);
-		free(result);
+		kmem_free(error);
+		kmem_free(result);
 		return NULL;
 	}
 
@@ -360,7 +360,7 @@ char* rfbMakeMaskFromAlphaSource(int width,int height,unsigned char* alphaSource
 					error[i-2]=left;
 			}
 		}
-	free(error);
+	kmem_free(error);
 	return (char *) result;
 }
 
@@ -368,15 +368,15 @@ void rfbFreeCursor(rfbCursorPtr cursor)
 {
    if(cursor) {
        if(cursor->cleanupRichSource && cursor->richSource)
-	   free(cursor->richSource);
+	   kmem_free(cursor->richSource);
        if(cursor->cleanupRichSource && cursor->alphaSource)
-	   free(cursor->alphaSource);
+	   kmem_free(cursor->alphaSource);
        if(cursor->cleanupSource && cursor->source)
-	   free(cursor->source);
+	   kmem_free(cursor->source);
        if(cursor->cleanupMask && cursor->mask)
-	   free(cursor->mask);
+	   kmem_free(cursor->mask);
        if(cursor->cleanup)
-	   free(cursor);
+	   kmem_free(cursor);
        else {
 	   cursor->cleanup=cursor->cleanupSource=cursor->cleanupMask
 	       =cursor->cleanupRichSource=FALSE;
@@ -399,7 +399,7 @@ void rfbMakeXCursorFromRichCursor(rfbScreenInfoPtr rfbScreen,rfbCursorPtr cursor
    int interp = 0;
 
    if(cursor->source && cursor->cleanupSource)
-       free(cursor->source);
+       kmem_free(cursor->source);
    cursor->source=(unsigned char*)calloc(w,cursor->height);
    if(!cursor->source)
        return;
@@ -476,7 +476,7 @@ void rfbMakeRichCursorFromXCursor(rfbScreenInfoPtr rfbScreen,rfbCursorPtr cursor
    unsigned char bit;
 
    if(cursor->richSource && cursor->cleanupRichSource)
-       free(cursor->richSource);
+       kmem_free(cursor->richSource);
    cp=cursor->richSource=(unsigned char*)calloc((size_t)cursor->width*bpp,cursor->height);
    if(!cp)
        return;
@@ -563,8 +563,8 @@ void rfbShowCursor(rfbClientPtr cl)
    w=(c->width+7)/8;
    if(s->underCursorBufferLen<bufSize) {
       if(s->underCursorBuffer!=NULL)
-	free(s->underCursorBuffer);
-      s->underCursorBuffer=malloc(bufSize);
+	kmem_free(s->underCursorBuffer);
+      s->underCursorBuffer=kmem_malloc(bufSize);
       s->underCursorBufferLen=bufSize;
    }
 

@@ -37,8 +37,8 @@ rfbInitColourMapSingleTable24(char **table, rfbPixelFormat *in,
     unsigned int nEntries = 1 << in->bitsPerPixel;
     int shift = colourMap->is16?16:8;
 
-    if (*table) free(*table);
-    *table = (char *)malloc(nEntries * 3 + 1);
+    if (*table) kmem_free(*table);
+    *table = (char *)kmem_malloc(nEntries * 3 + 1);
     t = (uint8_t *)*table;
 
     for (i = 0; i < nEntries; i++) {
@@ -81,8 +81,8 @@ rfbInitTrueColourSingleTable24 (char **table, rfbPixelFormat *in,
     uint8_t c;
     int nEntries = 1 << in->bitsPerPixel;
 
-    if (*table) free(*table);
-    *table = (char *)malloc(nEntries * 3 + 1);
+    if (*table) kmem_free(*table);
+    *table = (char *)kmem_malloc(nEntries * 3 + 1);
     t = (uint8_t *)*table;
 
     for (i = 0; i < nEntries; i++) {
@@ -120,8 +120,8 @@ rfbInitTrueColourRGBTables24 (char **table, rfbPixelFormat *in,
     uint8_t *greenTable;
     uint8_t *blueTable;
 
-    if (*table) free(*table);
-    *table = (char *)malloc((in->redMax + in->greenMax + in->blueMax + 3)
+    if (*table) kmem_free(*table);
+    *table = (char *)kmem_malloc((in->redMax + in->greenMax + in->blueMax + 3)
                             * 3 + 1);
     redTable = (uint8_t *)*table;
     greenTable = redTable + 3*(in->redMax + 1);

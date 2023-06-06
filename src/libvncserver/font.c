@@ -163,41 +163,43 @@ void rfbWholeFontBBox(rfbFontDataPtr font,
 
 rfbFontDataPtr rfbLoadConsoleFont(char *filename)
 {
-  FILE *f=fopen(filename,"rb");
-  rfbFontDataPtr p;
-  int i;
+  // FILE *f=fopen(filename,"rb");
+  // rfbFontDataPtr p;
+  // int i;
 
-  if(!f) return NULL;
+  // if(!f) return NULL;
 
-  p=(rfbFontDataPtr)malloc(sizeof(rfbFontData));
-  if(!p) {
-      fclose(f);
-      return NULL;
-  }
+  // p=(rfbFontDataPtr)kmem_malloc(sizeof(rfbFontData));
+  // if(!p) {
+  //     fclose(f);
+  //     return NULL;
+  // }
 
-  p->data=(unsigned char*)malloc(4096);
-  p->metaData=(int*)malloc(256*5*sizeof(int));
-  if(!p->data || !p->metaData || 1!=fread(p->data,4096,1,f)) {
-    free(p->data);
-    free(p->metaData);
-    free(p);
-    fclose(f);
-    return NULL;
-  }
-  fclose(f);
-  for(i=0;i<256;i++) {
-    p->metaData[i*5+0]=i*16; /* offset */
-    p->metaData[i*5+1]=8; /* width */
-    p->metaData[i*5+2]=16; /* height */
-    p->metaData[i*5+3]=0; /* xhot */
-    p->metaData[i*5+4]=0; /* yhot */
-  }
-  return(p);
+  // p->data=(unsigned char*)kmem_malloc(4096);
+  // p->metaData=(int*)kmem_malloc(256*5*sizeof(int));
+  // if(!p->data || !p->metaData || 1!=fread(p->data,4096,1,f)) {
+  //   kmem_free(p->data);
+  //   kmem_free(p->metaData);
+  //   kmem_free(p);
+  //   fclose(f);
+  //   return NULL;
+  // }
+  // fclose(f);
+  // for(i=0;i<256;i++) {
+  //   p->metaData[i*5+0]=i*16; /* offset */
+  //   p->metaData[i*5+1]=8; /* width */
+  //   p->metaData[i*5+2]=16; /* height */
+  //   p->metaData[i*5+3]=0; /* xhot */
+  //   p->metaData[i*5+4]=0; /* yhot */
+  // }
+  // return(p);
+
+  return NULL;
 }
 
 void rfbFreeFont(rfbFontDataPtr f)
 {
-  free(f->data);
-  free(f->metaData);
-  free(f);
+  kmem_free(f->data);
+  kmem_free(f->metaData);
+  kmem_free(f);
 }

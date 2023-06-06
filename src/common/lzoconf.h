@@ -266,7 +266,7 @@ struct lzo_callback_t;
 typedef struct lzo_callback_t lzo_callback_t;
 #define lzo_callback_p lzo_callback_t __LZO_MMODEL *
 
-/* malloc & free function types */
+/* kmem_malloc & free function types */
 typedef lzo_voidp (__LZO_CDECL *lzo_alloc_func_t)
     (lzo_callback_p self, lzo_uint items, lzo_uint size);
 typedef void      (__LZO_CDECL *lzo_free_func_t)

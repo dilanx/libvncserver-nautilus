@@ -298,7 +298,7 @@ SendRectEncodingTight(rfbClientPtr cl,
 
     if (!cl->beforeEncBuf || cl->beforeEncBufSize < 4) {
         if (cl->beforeEncBuf == NULL)
-            cl->beforeEncBuf = (char *)malloc(4);
+            cl->beforeEncBuf = (char *)kmem_malloc(4);
         else {
             char *reallocedBeforeEncBuf = (char *)realloc(cl->beforeEncBuf, 4);
             if (!reallocedBeforeEncBuf) return FALSE;
@@ -580,7 +580,7 @@ SendRectSimple(rfbClientPtr cl, int x, int y, int w, int h)
 
     if (!cl->beforeEncBuf || cl->beforeEncBufSize < maxBeforeSize) {
         if (cl->beforeEncBuf == NULL)
-            cl->beforeEncBuf = (char *)malloc(maxBeforeSize);
+            cl->beforeEncBuf = (char *)kmem_malloc(maxBeforeSize);
         else {
             char *reallocedBeforeEncBuf = (char *)realloc(cl->beforeEncBuf, maxBeforeSize);
             if (!reallocedBeforeEncBuf) return FALSE;
@@ -592,7 +592,7 @@ SendRectSimple(rfbClientPtr cl, int x, int y, int w, int h)
 
     if (!cl->afterEncBuf || cl->afterEncBufSize < maxAfterSize) {
         if (cl->afterEncBuf == NULL)
-            cl->afterEncBuf = (char *)malloc(maxAfterSize);
+            cl->afterEncBuf = (char *)kmem_malloc(maxAfterSize);
         else {
             char *reallocedAfterEncBuf = (char *)realloc(cl->afterEncBuf, maxAfterSize);
             if (!reallocedAfterEncBuf) return FALSE;
@@ -1547,7 +1547,7 @@ SendJpegRect(rfbClientPtr cl, int x, int y, int w, int h, int quality)
 
     if (!cl->afterEncBuf || cl->afterEncBufSize < TJBUFSIZE(w, h)) {
         if (cl->afterEncBuf == NULL)
-            cl->afterEncBuf = (char *)malloc(TJBUFSIZE(w, h));
+            cl->afterEncBuf = (char *)kmem_malloc(TJBUFSIZE(w, h));
         else {
             char *reallocedAfterEncBuf = (char *)realloc(cl->afterEncBuf, TJBUFSIZE(w, h));
             if (!reallocedAfterEncBuf) return FALSE;
@@ -1566,7 +1566,7 @@ SendJpegRect(rfbClientPtr cl, int x, int y, int w, int h, int quality)
         unsigned char *dst;
         int inRed, inGreen, inBlue, i, j;
 
-        if((tmpbuf = (unsigned char *)malloc((size_t)w * h * 3)) == NULL)
+        if((tmpbuf = (unsigned char *)kmem_malloc((size_t)w * h * 3)) == NULL)
             rfbLog("Memory allocation failure!\n");
         srcptr = (uint16_t *)&cl->scaledScreen->frameBuffer
             [y * cl->scaledScreen->paddedWidthInBytes + x * ps];
@@ -1615,14 +1615,14 @@ SendJpegRect(rfbClientPtr cl, int x, int y, int w, int h, int quality)
                    &size, subsamp, quality, flags) == -1) {
         rfbLog("JPEG Error: %s\n", tjGetErrorStr());
         if (tmpbuf) {
-            free(tmpbuf);
+            kmem_free(tmpbuf);
             tmpbuf = NULL;
         }
         return 0;
     }
 
     if (tmpbuf) {
-        free(tmpbuf);
+        kmem_free(tmpbuf);
         tmpbuf = NULL;
     }
 
@@ -1752,14 +1752,14 @@ static void pngFlushData(png_structp png_ptr)
 }
 
 
-static void *pngMalloc(png_structp png_ptr, png_size_t size)
+static void *pngkmem_malloc(png_structp png_ptr, png_size_t size)
 {
-    return malloc(size);
+    return kmem_malloc(size);
 }
 
 static void pngFree(png_structp png_ptr, png_voidp ptr)
 {
-    free(ptr);
+    kmem_free(ptr);
 }
 
 static rfbBool SendPngRect(rfbClientPtr cl, int x, int y, int w, int h) {
@@ -1777,7 +1777,7 @@ static rfbBool SendPngRect(rfbClientPtr cl, int x, int y, int w, int h) {
     cl->tightPngDstDataLen = 0;
 
     png_ptr = png_create_write_struct_2(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL,
-                                        NULL, pngMalloc, pngFree);
+                                        NULL, pngkmem_malloc, pngFree);
 
     if (png_ptr == NULL)
         return FALSE;
@@ -1811,7 +1811,7 @@ static rfbBool SendPngRect(rfbClientPtr cl, int x, int y, int w, int h) {
     if (color_type == PNG_COLOR_TYPE_PALETTE) {
         struct palette_cb_priv priv;
 
-        png_palette = pngMalloc(png_ptr, sizeof(*png_palette) *
+        png_palette = pngkmem_malloc(png_ptr, sizeof(*png_palette) *
                                  palette_size(palette));
 
         priv.vs = vs;
@@ -1832,7 +1832,7 @@ static rfbBool SendPngRect(rfbClientPtr cl, int x, int y, int w, int h) {
 #endif
 
     png_write_info(png_ptr, info_ptr);
-    buf = malloc(w * 3);
+    buf = kmem_malloc(w * 3);
     if (buf == NULL)
     {
         pngFree(png_ptr, png_palette);
@@ -1853,7 +1853,7 @@ static rfbBool SendPngRect(rfbClientPtr cl, int x, int y, int w, int h) {
 #endif
         png_write_row(png_ptr, buf);
     }
-    free(buf);
+    kmem_free(buf);
 
     png_write_end(png_ptr, NULL);
 

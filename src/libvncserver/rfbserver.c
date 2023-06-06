@@ -167,7 +167,7 @@ rfbClientIteratorPtr
 rfbGetClientIterator(rfbScreenInfoPtr rfbScreen)
 {
   rfbClientIteratorPtr i =
-    (rfbClientIteratorPtr)malloc(sizeof(struct rfbClientIterator));
+    (rfbClientIteratorPtr)kmem_malloc(sizeof(struct rfbClientIterator));
   if(i) {
     i->next = NULL;
     i->screen = rfbScreen;
@@ -180,7 +180,7 @@ rfbClientIteratorPtr
 rfbGetClientIteratorWithClosed(rfbScreenInfoPtr rfbScreen)
 {
   rfbClientIteratorPtr i =
-    (rfbClientIteratorPtr)malloc(sizeof(struct rfbClientIterator));
+    (rfbClientIteratorPtr)kmem_malloc(sizeof(struct rfbClientIterator));
   if(i) {
     i->next = NULL;
     i->screen = rfbScreen;
@@ -234,7 +234,7 @@ void
 rfbReleaseClientIterator(rfbClientIteratorPtr iterator)
 {
   if(iterator && iterator->next) rfbDecrClientRef(iterator->next);
-  free(iterator);
+  kmem_free(iterator);
 }
 
 
@@ -597,8 +597,8 @@ rfbClientConnectionGone(rfbClientPtr cl)
     rfbFreeUltraData(cl);
 
     /* free buffers holding pixel data before and after encoding */
-    free(cl->beforeEncBuf);
-    free(cl->afterEncBuf);
+    kmem_free(cl->beforeEncBuf);
+    kmem_free(cl->afterEncBuf);
 
     if(cl->sock != RFB_INVALID_SOCKET)
        FD_CLR(cl->sock,&(cl->screen->allFds));
@@ -606,10 +606,10 @@ rfbClientConnectionGone(rfbClientPtr cl)
     cl->clientGoneHook(cl);
 
     rfbLog("Client %s gone\n",cl->host);
-    free(cl->host);
+    kmem_free(cl->host);
 	
     if (cl->wsctx != NULL){
-        free(cl->wsctx);
+        kmem_free(cl->wsctx);
         cl->wsctx = NULL;
     }
 
@@ -619,7 +619,7 @@ rfbClientConnectionGone(rfbClientPtr cl)
 	deflateEnd( &(cl->compStream) );
     }
 
-    free(cl->extClipboardData);
+    kmem_free(cl->extClipboardData);
 
 #ifdef LIBVNCSERVER_HAVE_LIBJPEG
     for (i = 0; i < 4; i++) {
@@ -636,7 +636,7 @@ rfbClientConnectionGone(rfbClientPtr cl)
     sraRgnDestroy(cl->requestedRegion);
     sraRgnDestroy(cl->copyRegion);
 
-    if (cl->translateLookupTable) free(cl->translateLookupTable);
+    if (cl->translateLookupTable) kmem_free(cl->translateLookupTable);
 
     TINI_COND(cl->updateCond);
     TINI_MUTEX(cl->updateMutex);
@@ -660,7 +660,7 @@ rfbClientConnectionGone(rfbClientPtr cl)
     rfbPrintStats(cl);
     rfbResetStats(cl);
 
-    free(cl);
+    kmem_free(cl);
 }
 
 
@@ -754,14 +754,14 @@ rfbClientSendString(rfbClientPtr cl, const char *reason)
 
     rfbLog("rfbClientSendString(\"%s\")\n", reason);
 
-    buf = (char *)malloc(4 + len);
+    buf = (char *)kmem_malloc(4 + len);
     if (buf) {
         ((uint32_t *)buf)[0] = Swap32IfLE(len);
         memcpy(buf + 4, reason, len);
 
         if (rfbWriteExact(cl, buf, 4 + len) < 0)
             rfbLogPerror("rfbClientSendString: write");
-        free(buf);
+        kmem_free(buf);
     }
 
     rfbCloseClient(cl);
@@ -781,7 +781,7 @@ rfbClientConnFailed(rfbClientPtr cl,
 
     rfbLog("rfbClientConnFailed(\"%s\")\n", reason);
 
-    buf = (char *)malloc(8 + len);
+    buf = (char *)kmem_malloc(8 + len);
     if (buf) {
         ((uint32_t *)buf)[0] = Swap32IfLE(rfbConnFailed);
         ((uint32_t *)buf)[1] = Swap32IfLE(len);
@@ -789,7 +789,7 @@ rfbClientConnFailed(rfbClientPtr cl,
 
         if (rfbWriteExact(cl, buf, 8 + len) < 0)
             rfbLogPerror("rfbClientConnFailed: write");
-        free(buf);
+        kmem_free(buf);
     }
 
     rfbCloseClient(cl);
@@ -1115,7 +1115,7 @@ rfbSetServerVersionIdentity(rfbScreenInfoPtr screen, char *fmt, ...)
     vsnprintf(buffer, sizeof(buffer)-1, fmt, ap);
     va_end(ap);
     
-    if (screen->versionString!=NULL) free(screen->versionString);
+    if (screen->versionString!=NULL) kmem_free(screen->versionString);
     screen->versionString = strdup(buffer);
 }
 
@@ -1392,7 +1392,7 @@ rfbBool rfbFilenameTranslate2DOS(rfbClientPtr cl, char *unixPath, char *path)
 //     // Create a search string, like C:\folder\*
 
 //     pathLen = strlen(path);
-//     basePath = malloc(pathLen + 3);
+//     basePath = kmem_malloc(pathLen + 3);
 //     memcpy(basePath, path, pathLen);
 //     basePathLength = pathLen;
 //     basePath[basePathLength] = '\\';
@@ -1402,7 +1402,7 @@ rfbBool rfbFilenameTranslate2DOS(rfbClientPtr cl, char *unixPath, char *path)
 //     // Start a search
 //     memset(&winFindData, 0, sizeof(winFindData));
 //     findHandle = FindFirstFileA(path, &winFindData);
-//     free(basePath);
+//     kmem_free(basePath);
 
 //     if (findHandle == INVALID_HANDLE_VALUE)
 // #else
@@ -1515,7 +1515,7 @@ char *rfbProcessFileTransferReadBuffer(rfbClientPtr cl, uint32_t length)
     /*
        We later alloc length+1, which might wrap around on 32-bit systems if length equals
        0XFFFFFFFF, i.e. SIZE_MAX for 32-bit systems. On 64-bit systems, a length of 0XFFFFFFFF
-       will safely be allocated since this check will never trigger and malloc() can digest length+1
+       will safely be allocated since this check will never trigger and kmem_malloc() can digest length+1
        without problems as length is a uint32_t.
        We also later pass length to rfbReadExact() that expects a signed int type and
        that might wrap on platforms with a 32-bit int type if length is bigger
@@ -1528,14 +1528,14 @@ char *rfbProcessFileTransferReadBuffer(rfbClientPtr cl, uint32_t length)
     }
 
     if (length>0) {
-        buffer=malloc((size_t)length+1);
+        buffer=kmem_malloc((size_t)length+1);
         if (buffer!=NULL) {
             if ((n = rfbReadExact(cl, (char *)buffer, length)) <= 0) {
                 if (n != 0)
                     rfbLogPerror("rfbProcessFileTransferReadBuffer: read");
                 rfbCloseClient(cl);
-                /* NOTE: don't forget to free(buffer) if you return early! */
-                free(buffer);
+                /* NOTE: don't forget to kmem_free(buffer) if you return early! */
+                kmem_free(buffer);
                 return NULL;
             }
             /* Null Terminate */
@@ -1704,7 +1704,7 @@ char *rfbProcessFileTransferReadBuffer(rfbClientPtr cl, uint32_t length)
 //             */
 //             if ((buffer = rfbProcessFileTransferReadBuffer(cl, length))==NULL) return FALSE;
 //             retval = rfbSendDirContent(cl, length, buffer);
-//             free(buffer);
+//             kmem_free(buffer);
 //             return retval;
 //         }
 //         break;
@@ -1756,7 +1756,7 @@ char *rfbProcessFileTransferReadBuffer(rfbClientPtr cl, uint32_t length)
 //               strftime(timespec, sizeof(timespec), "%m/%d/%Y %H:%M",gmtime(&statbuf.st_ctime));
 //               buffer=realloc(buffer, length + strlen(timespec) + 2); /* comma, and Null term */
 //               if (buffer==NULL) {
-//                   rfbLog("rfbProcessFileTransfer() rfbFileTransferRequest: Failed to malloc %d bytes\n", length + strlen(timespec) + 2);
+//                   rfbLog("rfbProcessFileTransfer() rfbFileTransferRequest: Failed to kmem_malloc %d bytes\n", length + strlen(timespec) + 2);
 //                   return FALSE;
 //               }
 //               strcat(buffer,",");
@@ -1780,7 +1780,7 @@ char *rfbProcessFileTransferReadBuffer(rfbClientPtr cl, uint32_t length)
 
 //         if (cl->fileTransfer.fd==-1)
 //         {
-//             free(buffer);
+//             kmem_free(buffer);
 //             return retval;
 //         }
 //         /* setup filetransfer stuff */
@@ -1796,7 +1796,7 @@ char *rfbProcessFileTransferReadBuffer(rfbClientPtr cl, uint32_t length)
 //           rfbLogPerror("rfbProcessFileTransfer: write");
 //           rfbCloseClient(cl);
 //           UNLOCK(cl->sendMutex);
-//           free(buffer);
+//           kmem_free(buffer);
 //           return FALSE;
 //         }
 //         UNLOCK(cl->sendMutex);
@@ -1850,8 +1850,8 @@ char *rfbProcessFileTransferReadBuffer(rfbClientPtr cl, uint32_t length)
 //             if (n != 0)
 //                 rfbLogPerror("rfbProcessFileTransfer: read sizeHtmp");
 //             rfbCloseClient(cl);
-//             /* NOTE: don't forget to free(buffer) if you return early! */
-//             free(buffer);
+//             /* NOTE: don't forget to kmem_free(buffer) if you return early! */
+//             kmem_free(buffer);
 //             return FALSE;
 //         }
 //         sizeHtmp = Swap32IfLE(sizeHtmp);
@@ -1870,7 +1870,7 @@ char *rfbProcessFileTransferReadBuffer(rfbClientPtr cl, uint32_t length)
 //         /* File Size in bytes, 0xFFFFFFFF (-1) means error */
 //         retval = rfbSendFileTransferMessage(cl, rfbFileAcceptHeader, 0, (cl->fileTransfer.fd==-1 ? -1 : 0), length, buffer);
 //         if (cl->fileTransfer.fd==-1) {
-//             free(buffer);
+//             kmem_free(buffer);
 //             return retval;
 //         }
         
@@ -1993,7 +1993,7 @@ char *rfbProcessFileTransferReadBuffer(rfbClientPtr cl, uint32_t length)
 //             /*
 //             */
 //             retval = rfbSendFileTransferMessage(cl, rfbCommandReturn, rfbADirCreate, retval, length, buffer);
-//             free(buffer);
+//             kmem_free(buffer);
 //             return retval;
 //         case rfbCFileDelete: /* Client requests the deletion of a file */
 //             if (!rfbFilenameTranslate2UNIX(cl, buffer, filename1, sizeof(filename1)))
@@ -2007,7 +2007,7 @@ char *rfbProcessFileTransferReadBuffer(rfbClientPtr cl, uint32_t length)
 //             }
 //             else retval=-1;
 //             retval = rfbSendFileTransferMessage(cl, rfbCommandReturn, rfbAFileDelete, retval, length, buffer);
-//             free(buffer);
+//             kmem_free(buffer);
 //             return retval;
 //         case rfbCFileRename: /* Client requests the Renaming of a file/directory */
 //             p = strrchr(buffer, '*');
@@ -2026,7 +2026,7 @@ char *rfbProcessFileTransferReadBuffer(rfbClientPtr cl, uint32_t length)
 //                 /* Restore the buffer so the reply is good */
 //                 *p = '*';
 //                 retval = rfbSendFileTransferMessage(cl, rfbCommandReturn, rfbAFileRename, retval, length, buffer);
-//                 free(buffer);
+//                 kmem_free(buffer);
 //                 return retval;
 //             }
 //             break;
@@ -2035,12 +2035,12 @@ char *rfbProcessFileTransferReadBuffer(rfbClientPtr cl, uint32_t length)
 //         break;
 //     }
 
-//     /* NOTE: don't forget to free(buffer) if you return early! */
-//     free(buffer);
+//     /* NOTE: don't forget to kmem_free(buffer) if you return early! */
+//     kmem_free(buffer);
 //     return TRUE;
 
 // fail:
-//     free(buffer);
+//     kmem_free(buffer);
 //     return FALSE;
 // }
 
@@ -2085,7 +2085,7 @@ rfbSendExtendedServerCutTextData(rfbClientPtr cl, const char *data, int len) {
     uint32_t tmpInt;
     char *bufBeforeZlib;
     char *bufAfterZlib;
-    bufBeforeZlib = (char *)malloc(len + 4);
+    bufBeforeZlib = (char *)kmem_malloc(len + 4);
     if (bufBeforeZlib == NULL) {
         rfbLogPerror("rfbSendExtendedClipboardCapability: failed to allocate memory");
         rfbCloseClient(cl);
@@ -2095,17 +2095,17 @@ rfbSendExtendedServerCutTextData(rfbClientPtr cl, const char *data, int len) {
     memcpy(bufBeforeZlib, &tmpInt, 4);
     memcpy(bufBeforeZlib + 4, data, len);
     size = compressBound(len + 4);
-    bufAfterZlib = (char *)malloc(12 + size);
+    bufAfterZlib = (char *)kmem_malloc(12 + size);
     if (bufAfterZlib == NULL) {
         rfbLogPerror("rfbSendExtendedClipboardCapability: failed to allocate memory");
-        free(bufBeforeZlib);
+        kmem_free(bufBeforeZlib);
         rfbCloseClient(cl);
         return FALSE;
     }
     if (compress((unsigned char *)bufAfterZlib + 12, &size, (unsigned char *)bufBeforeZlib, len + 4) != Z_OK) {
         rfbLogPerror("rfbSendExtendedClipboardCapability: zlib deflation error");
-        free(bufBeforeZlib);
-        free(bufAfterZlib);
+        kmem_free(bufBeforeZlib);
+        kmem_free(bufAfterZlib);
         rfbCloseClient(cl);
         return FALSE;
     }
@@ -2119,14 +2119,14 @@ rfbSendExtendedServerCutTextData(rfbClientPtr cl, const char *data, int len) {
     memcpy(bufAfterZlib + 8, &tmpInt, 4);
     if (rfbWriteExact(cl, bufAfterZlib, 12 + size) < 0) {
         rfbLogPerror("rfbSendExtendedClipboardCapability: write");
-        free(bufBeforeZlib);
-        free(bufAfterZlib);
+        kmem_free(bufBeforeZlib);
+        kmem_free(bufAfterZlib);
         rfbCloseClient(cl);
         return FALSE;
     }
     rfbStatRecordMessageSent(cl, rfbServerCutText, 12 + size, 12 + size);
-    free(bufBeforeZlib);
-    free(bufAfterZlib);
+    kmem_free(bufBeforeZlib);
+    kmem_free(bufAfterZlib);
     return TRUE;
 }
 
@@ -2158,7 +2158,7 @@ rfbProcessExtendedServerCutTextData(rfbClientPtr cl, uint32_t flags, const char 
         if (err != Z_OK) {
             rfbLogPerror("rfbProcessExtendedServerCutTextData: zlib inflation error");
             if (buf != NULL) {
-                free(buf);
+                kmem_free(buf);
             }
             inflateEnd(&stream);
             rfbCloseClient(cl);
@@ -2166,7 +2166,7 @@ rfbProcessExtendedServerCutTextData(rfbClientPtr cl, uint32_t flags, const char 
         }
         size = Swap32IfLE(size);
         if (buf != NULL) {
-            free(buf);
+            kmem_free(buf);
             buf = NULL;
         }
         if (size > (1 << 20)) {
@@ -2175,7 +2175,7 @@ rfbProcessExtendedServerCutTextData(rfbClientPtr cl, uint32_t flags, const char 
             rfbCloseClient(cl);
             return FALSE;
         }
-        buf = (char *)malloc(size);
+        buf = (char *)kmem_malloc(size);
         if (buf == NULL) {
             rfbLogPerror("rfbProcessExtendedServerCutTextData: failed to allocate memory");
             inflateEnd(&stream);
@@ -2186,7 +2186,7 @@ rfbProcessExtendedServerCutTextData(rfbClientPtr cl, uint32_t flags, const char 
         stream.next_out = (unsigned char *)buf;
         if (inflate(&stream, Z_NO_FLUSH) != Z_OK) {
             rfbLogPerror("rfbProcessExtendedServerCutTextData: zlib inflation error");
-            free(buf);
+            kmem_free(buf);
             inflateEnd(&stream);
             rfbCloseClient(cl);
             return FALSE;
@@ -2198,7 +2198,7 @@ rfbProcessExtendedServerCutTextData(rfbClientPtr cl, uint32_t flags, const char 
             }
         }
     }
-    free(buf);
+    kmem_free(buf);
     inflateEnd(&stream);
     return TRUE;
 }
@@ -2783,17 +2783,17 @@ rfbProcessClientNormalMessage(rfbClientPtr cl)
         default:
             if ((msg.tc.length>0) && (msg.tc.length<rfbTextMaxSize))
             {
-                str = (char *)malloc(msg.tc.length);
+                str = (char *)kmem_malloc(msg.tc.length);
                 if (str==NULL)
                 {
-                    rfbLog("Unable to malloc %d bytes for a TextChat Message\n", msg.tc.length);
+                    rfbLog("Unable to kmem_malloc %d bytes for a TextChat Message\n", msg.tc.length);
                     rfbCloseClient(cl);
                     return;
                 }
                 if ((n = rfbReadExact(cl, str, msg.tc.length)) <= 0) {
                     if (n != 0)
                         rfbLogPerror("rfbProcessClientNormalMessage: read");
-                    free(str);
+                    kmem_free(str);
                     rfbCloseClient(cl);
                     return;
                 }
@@ -2814,7 +2814,7 @@ rfbProcessClientNormalMessage(rfbClientPtr cl)
         if (cl->screen->setTextChat!=NULL)
             cl->screen->setTextChat(cl, msg.tc.length, str);
 
-        free(str);
+        kmem_free(str);
         return;
 
 
@@ -2840,7 +2840,7 @@ rfbProcessClientNormalMessage(rfbClientPtr cl)
     }
 #endif
 
-	/* uint32_t input is passed to malloc()'s size_t argument,
+	/* uint32_t input is passed to kmem_malloc()'s size_t argument,
 	 * to rfbReadExact()'s int argument, to rfbStatRecordMessageRcvd()'s int
 	 * argument increased of sz_rfbClientCutTextMsg, and to setXCutText()'s int
 	 * argument. Here we impose a limit of 1 MB so that the value fits
@@ -2865,7 +2865,7 @@ rfbProcessClientNormalMessage(rfbClientPtr cl)
 	if ((n = rfbReadExact(cl, str, msg.cct.length)) <= 0) {
 	    if (n != 0)
 	        rfbLogPerror("rfbProcessClientNormalMessage: read");
-	    free(str);
+	    kmem_free(str);
 	    rfbCloseClient(cl);
 	    return;
 	}
@@ -2875,7 +2875,7 @@ rfbProcessClientNormalMessage(rfbClientPtr cl)
         if (msg.cct.length < 4) {
             rfbLogPerror("rfbClientCutText: extended clipboard message is corrupted");
             rfbCloseClient(cl);
-            free(str);
+            kmem_free(str);
             return;
         }
         memcpy(&extClipboardFlags, str, 4);
@@ -2892,7 +2892,7 @@ rfbProcessClientNormalMessage(rfbClientPtr cl)
             } else if (msg.cct.length != 4 + extClipboardFormats * 4) {
                 rfbLogPerror("rfbProcessClientNormalMessage: extended clipboard message is corrupted");
                 rfbCloseClient(cl);
-                free(str);
+                kmem_free(str);
                 return;
             }
             if (extClipboardFlags & rfbExtendedClipboard_Text) {
@@ -2901,13 +2901,13 @@ rfbProcessClientNormalMessage(rfbClientPtr cl)
             } else {
                 cl->enableExtendedClipboard = FALSE;
             }
-            free(str);
+            kmem_free(str);
             return;
         } else if (extClipboardFlags & rfbExtendedClipboard_Request) {
             if ((cl->extClipboardUserCap & rfbExtendedClipboard_Provide) &&
                 cl->extClipboardData != NULL && cl->extClipboardDataSize > 0) {
                 if (!rfbSendExtendedServerCutTextData(cl, cl->extClipboardData, cl->extClipboardDataSize)) {
-                    free(str);
+                    kmem_free(str);
                     return;
                 }
             }
@@ -2915,28 +2915,28 @@ rfbProcessClientNormalMessage(rfbClientPtr cl)
             if ((cl->extClipboardUserCap & rfbExtendedClipboard_Notify) &&
                 cl->extClipboardData != NULL && cl->extClipboardDataSize > 0) {
                 if (!rfbSendExtendedClipboardNotify(cl)) {
-                    free(str);
+                    kmem_free(str);
                     return;
                 }
             }
         } else if (extClipboardFlags & rfbExtendedClipboard_Provide) {
             if (!rfbProcessExtendedServerCutTextData(cl, extClipboardFlags, str + 4, msg.cct.length - 4)) {
-                free(str);
+                kmem_free(str);
                 return;
             }
         }
-        free(str);
+        kmem_free(str);
     } else {
         if(!cl->viewOnly) {
             cl->screen->setXCutText(str, msg.cct.length, cl);
         }
-        free(str);
+        kmem_free(str);
     }
 #else
     if(!cl->viewOnly) {
         cl->screen->setXCutText(str, msg.cct.length, cl);
     }
-    free(str);
+    kmem_free(str);
 #endif
 
         return;
@@ -3024,7 +3024,7 @@ rfbProcessClientNormalMessage(rfbClientPtr cl)
             return;
         }
 
-        extDesktopScreens = (rfbExtDesktopScreen *) malloc(msg.sdm.numberOfScreens * sz_rfbExtDesktopScreen);
+        extDesktopScreens = (rfbExtDesktopScreen *) kmem_malloc(msg.sdm.numberOfScreens * sz_rfbExtDesktopScreen);
         if (extDesktopScreens == NULL) {
                 rfbLogPerror("rfbProcessClientNormalMessage: not enough memory");
                 rfbCloseClient(cl);
@@ -3034,7 +3034,7 @@ rfbProcessClientNormalMessage(rfbClientPtr cl)
         if ((n = rfbReadExact(cl, ((char *)extDesktopScreens), msg.sdm.numberOfScreens * sz_rfbExtDesktopScreen)) <= 0) {
             if (n != 0)
                 rfbLogPerror("rfbProcessClientNormalMessage: read");
-            free(extDesktopScreens);
+            kmem_free(extDesktopScreens);
             rfbCloseClient(cl);
             return;
         }
@@ -3074,7 +3074,7 @@ rfbProcessClientNormalMessage(rfbClientPtr cl)
             cl->newFBSizePending = TRUE;
         }
 
-        free(extDesktopScreens);
+        kmem_free(extDesktopScreens);
         return;
 
     default:
@@ -3931,7 +3931,7 @@ rfbSendSetColourMapEntries(rfbClientPtr cl,
 
     if (nColours > 256) {
 	/* some rare hardware has, e.g., 4096 colors cells: PseudoColor:12 */
-    	wbuf = (char *) malloc(sz_rfbSetColourMapEntriesMsg + nColours * 3 * 2);
+    	wbuf = (char *) kmem_malloc(sz_rfbSetColourMapEntriesMsg + nColours * 3 * 2);
     }
 
     scme = (rfbSetColourMapEntriesMsg *)wbuf;
@@ -3964,14 +3964,14 @@ rfbSendSetColourMapEntries(rfbClientPtr cl,
     if (rfbWriteExact(cl, wbuf, len) < 0) {
 	rfbLogPerror("rfbSendSetColourMapEntries: write");
 	rfbCloseClient(cl);
-        if (wbuf != buf) free(wbuf);
+        if (wbuf != buf) kmem_free(wbuf);
         UNLOCK(cl->sendMutex);
 	return FALSE;
     }
     UNLOCK(cl->sendMutex);
 
     rfbStatRecordMessageSent(cl, rfbSetColourMapEntries, len, len);
-    if (wbuf != buf) free(wbuf);
+    if (wbuf != buf) kmem_free(wbuf);
     return TRUE;
 }
 
@@ -4053,10 +4053,10 @@ rfbSendServerCutTextUTF8(rfbScreenInfoPtr rfbScreen,char *str, int len, char *fa
         LOCK(cl->sendMutex);
         if (cl->enableExtendedClipboard) {
             if (cl->extClipboardData != NULL) {
-                free(cl->extClipboardData);
+                kmem_free(cl->extClipboardData);
                 cl->extClipboardData = NULL;
             }
-            cl->extClipboardData = (char *)malloc(len + 1);
+            cl->extClipboardData = (char *)kmem_malloc(len + 1);
             if (cl->extClipboardData == NULL) {
                 rfbLogPerror("rfbSendServerCutText: failed to allocate memory");
                 rfbCloseClient(cl);

@@ -28,3 +28,4 @@
 - Removed chunk with call to `getrlimit`.
 - `rfbEncryptAndStorePasswd` and `rfbRandomBytes` now does nothing. This shouldn't matter too much since we're not really using auth.
 - `rfbUsage` now does nothing. Hopefully this shouldn't matter too much since we're not using the CLI.
+- All calls to `malloc` are now calls to `kmem_malloc`, and all calls to `free` are now calls to `kmem_free`. `stdio.h` and `stdlib.h` includes were removed.

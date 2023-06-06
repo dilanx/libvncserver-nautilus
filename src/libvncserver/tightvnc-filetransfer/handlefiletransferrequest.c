@@ -180,7 +180,7 @@ GetHomeDir(uid_t uid)
     }
 
 	int homedirlen = WideCharToMultiByte(CP_UTF8, 0, profileDir, -1, homedir, 0, NULL, NULL);
-	if (homedirlen<=0 || (homedir = malloc(homedirlen)) == NULL)
+	if (homedirlen<=0 || (homedir = kmem_malloc(homedirlen)) == NULL)
 	{
 		return NULL;
 	}
@@ -466,7 +466,7 @@ HandleFileDownloadLengthError(rfbClientPtr cl, short fNameSize)
 	    rfbCloseClient(cl);
 
 	    if(path != NULL) {
-			free(path);
+			kmem_free(path);
 			path = NULL;
 		}
 	    
@@ -474,7 +474,7 @@ HandleFileDownloadLengthError(rfbClientPtr cl, short fNameSize)
 	}
 
     if(path != NULL) {
-		free(path);
+		kmem_free(path);
 		path = NULL;
 	}
     
@@ -621,7 +621,7 @@ HandleFileDownloadCancelRequest(rfbClientPtr cl, rfbTightClientPtr rtcp)
 					"FileDownloadCancelMsg\n", __FILE__, __FUNCTION__);
 		
 	    rfbCloseClient(cl);
-	    free(reason);
+	    kmem_free(reason);
 	    return;
 	}
 
@@ -633,7 +633,7 @@ HandleFileDownloadCancelRequest(rfbClientPtr cl, rfbTightClientPtr rtcp)
 	pthread_mutex_unlock(&fileDownloadMutex);
 	
 	if(reason != NULL) {
-		free(reason);
+		kmem_free(reason);
 		reason = NULL;
 	}
 
@@ -736,7 +736,7 @@ HandleFileUploadLengthError(rfbClientPtr cl, short fNameSize)
 	    rfbCloseClient(cl);
 
 	    if(path != NULL) {
-			free(path);
+			kmem_free(path);
 			path = NULL;
 		}
 	    
@@ -747,7 +747,7 @@ HandleFileUploadLengthError(rfbClientPtr cl, short fNameSize)
 			"file path requested is <%s>\n", __FILE__, __FUNCTION__, path);
 
     if(path != NULL) {
-		free(path);
+		kmem_free(path);
 		path = NULL;
 	}
 
@@ -858,7 +858,7 @@ HandleFileUploadDataRequest(rfbClientPtr cl, rfbTightClientPtr rtcp)
 	    rfbCloseClient(cl);
 
 	    if(pBuf != NULL) {
-	    	free(pBuf);
+	    	kmem_free(pBuf);
 	    	pBuf = NULL;
 		}
 	    
@@ -880,7 +880,7 @@ HandleFileUploadDataRequest(rfbClientPtr cl, rfbTightClientPtr rtcp)
 		CloseUndoneFileUpload(cl, rtcp);
 
 	    if(pBuf != NULL) {
-	    	free(pBuf);
+	    	kmem_free(pBuf);
 	    	pBuf = NULL;
 		}
 		
@@ -892,7 +892,7 @@ HandleFileUploadDataRequest(rfbClientPtr cl, rfbTightClientPtr rtcp)
 	HandleFileUploadWrite(cl, rtcp, pBuf);
 
     if(pBuf != NULL) {
-    	free(pBuf);
+    	kmem_free(pBuf);
     	pBuf = NULL;
 	}
 
@@ -969,7 +969,7 @@ HandleFileUploadFailedRequest(rfbClientPtr cl, rfbTightClientPtr rtcp)
 	    rfbCloseClient(cl);
 
 		if(reason != NULL) {
-			free(reason);
+			kmem_free(reason);
 			reason = NULL;
 		}
 
@@ -982,7 +982,7 @@ HandleFileUploadFailedRequest(rfbClientPtr cl, rfbTightClientPtr rtcp)
 	CloseUndoneFileUpload(cl, rtcp);
 
 	if(reason != NULL) {
-		free(reason);
+		kmem_free(reason);
 		reason = NULL;
 	}
 

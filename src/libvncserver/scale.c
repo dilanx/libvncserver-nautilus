@@ -279,7 +279,7 @@ void rfbScaledScreenUpdate(rfbScreenInfoPtr screen, int x1, int y1, int x2, int 
 rfbScreenInfoPtr rfbScaledScreenAllocate(rfbClientPtr cl, int width, int height)
 {
     rfbScreenInfoPtr ptr;
-    ptr = malloc(sizeof(rfbScreenInfo));
+    ptr = kmem_malloc(sizeof(rfbScreenInfo));
     if (ptr!=NULL)
     {
         int allocSize;
@@ -294,8 +294,8 @@ rfbScreenInfoPtr rfbScaledScreenAllocate(rfbClientPtr cl, int width, int height)
         allocSize = pad4(width * (ptr->bitsPerPixel/8)); /* per protocol, width<2**16 and bpp<256 */
         if (height == 0 || allocSize >= SIZE_MAX / height)
         {
-          free(ptr);
-          return NULL; /* malloc() will allocate an incorrect buffer size - early abort */
+          kmem_free(ptr);
+          return NULL; /* kmem_malloc() will allocate an incorrect buffer size - early abort */
         }
 
         /* Resume copy everything */
@@ -312,7 +312,7 @@ rfbScreenInfoPtr rfbScaledScreenAllocate(rfbClientPtr cl, int width, int height)
         ptr->sizeInBytes = ptr->paddedWidthInBytes * ptr->height;
         ptr->serverFormat = cl->screen->serverFormat;
 
-        ptr->frameBuffer = malloc(ptr->sizeInBytes);
+        ptr->frameBuffer = kmem_malloc(ptr->sizeInBytes);
         if (ptr->frameBuffer!=NULL)
         {
             /* Reset to a known condition: scale the entire framebuffer */
@@ -325,8 +325,8 @@ rfbScreenInfoPtr rfbScaledScreenAllocate(rfbClientPtr cl, int width, int height)
         }
         else
         {
-            /* Failed to malloc the new frameBuffer, cleanup */
-            free(ptr);
+            /* Failed to kmem_malloc the new frameBuffer, cleanup */
+            kmem_free(ptr);
             ptr=NULL;
         }
     }
