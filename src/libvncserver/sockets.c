@@ -112,7 +112,7 @@ rfbNewConnectionFromSock(rfbScreenInfoPtr rfbScreen, rfbSocket sock)
 #endif
     socklen_t addrlen = sizeof(addr);
 
-    getpeername(sock, (struct sockaddr *)&addr, &addrlen);
+    lwip_getpeername(sock, (struct sockaddr *)&addr, &addrlen);
 
     if(!rfbSetNonBlocking(sock)) {
       rfbLogPerror("rfbCheckFds: setnonblock");
@@ -362,15 +362,15 @@ rfbCheckFds(rfbScreenInfoPtr rfbScreen,long usec)
 	memcpy((char *)&fds, (char *)&(rfbScreen->allFds), sizeof(fd_set));
 	tv.tv_sec = 0;
 	tv.tv_usec = usec;
-	nfds = select(rfbScreen->maxFd + 1, &fds, NULL, NULL /* &fds */, &tv);
+	nfds = lwip_select(rfbScreen->maxFd + 1, &fds, NULL, NULL /* &fds */, &tv);
 	if (nfds == 0) {
 	    /* timed out, check for async events */
             i = rfbGetClientIterator(rfbScreen);
             while((cl = rfbClientIteratorNext(i))) {
                 if (cl->onHold)
                     continue;
-                if (FD_ISSET(cl->sock, &(rfbScreen->allFds)))
-                    rfbSendFileTransferChunk(cl);
+                // if (FD_ISSET(cl->sock, &(rfbScreen->allFds)))
+                //     rfbSendFileTransferChunk(cl);
             }
             rfbReleaseClientIterator(i);
 	    return result;
@@ -410,7 +410,7 @@ rfbCheckFds(rfbScreenInfoPtr rfbScreen,long usec)
 	if ((rfbScreen->udpSock != RFB_INVALID_SOCKET) && FD_ISSET(rfbScreen->udpSock, &fds)) {
 	    if(!rfbScreen->udpClient)
 		rfbNewUDPClient(rfbScreen);
-	    if (recvfrom(rfbScreen->udpSock, buf, 1, MSG_PEEK,
+	    if (lwip_recvfrom(rfbScreen->udpSock, buf, 1, MSG_PEEK,
 			(struct sockaddr *)&addr, &addrlen) < 0) {
 		rfbLogPerror("rfbCheckFds: UDP: recvfrom");
 		rfbDisconnectUDPSock(rfbScreen);
@@ -425,7 +425,7 @@ rfbCheckFds(rfbScreenInfoPtr rfbScreen,long usec)
 		    memcpy(&rfbScreen->udpRemoteAddr, &addr, addrlen);
 		    rfbScreen->udpSockConnected = TRUE;
 
-		    if (connect(rfbScreen->udpSock,
+		    if (lwip_connect(rfbScreen->udpSock,
 				(struct sockaddr *)&addr, addrlen) < 0) {
 			rfbLogPerror("rfbCheckFds: UDP: connect");
 			rfbDisconnectUDPSock(rfbScreen);
@@ -461,8 +461,8 @@ rfbCheckFds(rfbScreenInfoPtr rfbScreen,long usec)
                     rfbProcessClientMessage(cl);
 #endif
                 }
-                else
-                    rfbSendFileTransferChunk(cl);
+                // else
+                //     rfbSendFileTransferChunk(cl);
             }
 	}
 	rfbReleaseClientIterator(i);
@@ -488,7 +488,7 @@ rfbProcessNewConnection(rfbScreenInfoPtr rfbScreen)
       FD_SET(rfbScreen->listenSock, &listen_fds);
     if(rfbScreen->listen6Sock != RFB_INVALID_SOCKET)
       FD_SET(rfbScreen->listen6Sock, &listen_fds);
-    if (select(rfbScreen->maxFd+1, &listen_fds, NULL, NULL, NULL) == -1) {
+    if (lwip_select(rfbScreen->maxFd+1, &listen_fds, NULL, NULL, NULL) == -1) {
       rfbLogPerror("rfbProcessNewConnection: error in select");
       return FALSE;
     }
@@ -506,26 +506,26 @@ rfbProcessNewConnection(rfbScreenInfoPtr rfbScreen)
       TODO: add Windows support.
      */
 #if defined LIBVNCSERVER_HAVE_SYS_RESOURCE_H && defined LIBVNCSERVER_HAVE_FCNTL_H
-    if(getrlimit(RLIMIT_NOFILE, &rlim) < 0)
-	maxfds = 100;  /* use a sane default if getting the limit fails */
-    else
-	maxfds = rlim.rlim_cur;
+    // if(getrlimit(RLIMIT_NOFILE, &rlim) < 0)
+	// maxfds = 100;  /* use a sane default if getting the limit fails */
+    // else
+	// maxfds = rlim.rlim_cur;
 
-    /* get the number of currently open fds as per https://stackoverflow.com/a/7976880/361413 */
-    curfds = 0;
-    for(i = 0; i < maxfds; ++i)
-	if(fcntl(i, F_GETFD) != -1)
-	    ++curfds;
+    // /* get the number of currently open fds as per https://stackoverflow.com/a/7976880/361413 */
+    // curfds = 0;
+    // for(i = 0; i < maxfds; ++i)
+	// if(fcntl(i, F_GETFD) != -1)
+	//     ++curfds;
 
-    if(curfds > maxfds * rfbScreen->fdQuota) {
-	rfbErr("rfbProcessNewconnection: open fd count of %lu exceeds quota %.1f of limit %lu, denying connection\n", curfds, rfbScreen->fdQuota, maxfds);
-	sock = accept(chosen_listen_sock, NULL, NULL);
-	rfbCloseSocket(sock);
-	return FALSE;
-    }
+    // if(curfds > maxfds * rfbScreen->fdQuota) {
+	// rfbErr("rfbProcessNewconnection: open fd count of %lu exceeds quota %.1f of limit %lu, denying connection\n", curfds, rfbScreen->fdQuota, maxfds);
+	// sock = lwip_accept(chosen_listen_sock, NULL, NULL);
+	// rfbCloseSocket(sock);
+	// return FALSE;
+    // }
 #endif
 
-    if ((sock = accept(chosen_listen_sock, NULL, NULL)) == RFB_INVALID_SOCKET) {
+    if ((sock = lwip_accept(chosen_listen_sock, NULL, NULL)) == RFB_INVALID_SOCKET) {
       rfbLogPerror("rfbProcessNewconnection: accept");
       return FALSE;
     }
@@ -715,7 +715,7 @@ rfbReadExactTimeout(rfbClientPtr cl, char* buf, int len, int timeout)
             FD_SET(sock, &fds);
             tv.tv_sec = timeout / 1000;
             tv.tv_usec = (timeout % 1000) * 1000;
-            n = select(sock+1, &fds, NULL, &fds, &tv);
+            n = lwip_select(sock+1, &fds, NULL, &fds, &tv);
             if (n < 0) {
                 rfbLogPerror("ReadExact: select");
                 return n;
@@ -775,7 +775,7 @@ rfbPeekExactTimeout(rfbClientPtr cl, char* buf, int len, int timeout)
 	    n = rfbssl_peek(cl, buf, len);
 	else
 #endif
-	    n = recv(sock, buf, len, MSG_PEEK);
+	    n = lwip_recv(sock, buf, len, MSG_PEEK);
 
         if (n == len) {
 
@@ -809,7 +809,7 @@ rfbPeekExactTimeout(rfbClientPtr cl, char* buf, int len, int timeout)
             FD_SET(sock, &fds);
             tv.tv_sec = timeout / 1000;
             tv.tv_usec = (timeout % 1000) * 1000;
-            n = select(sock+1, &fds, NULL, &fds, &tv);
+            n = lwip_select(sock+1, &fds, NULL, &fds, &tv);
             if (n < 0) {
                 rfbLogPerror("PeekExact: select");
                 return n;
@@ -924,7 +924,7 @@ rfbWriteExact(rfbClientPtr cl,
             FD_SET(sock, &fds);
             tv.tv_sec = 5;
             tv.tv_usec = 0;
-            n = select(sock+1, NULL, &fds, NULL /* &fds */, &tv);
+            n = lwip_select(sock+1, NULL, &fds, NULL /* &fds */, &tv);
 	    if (n < 0) {
 #ifdef WIN32
                 errno=WSAGetLastError();
@@ -955,13 +955,13 @@ rfbWriteExact(rfbClientPtr cl,
 int
 rfbStringToAddr(char *str, in_addr_t *addr)  {
     if (str == NULL || *str == '\0' || strcmp(str, "any") == 0) {
-        *addr = htonl(INADDR_ANY);
+        *addr = lwip_htonl(INADDR_ANY);
     } else if (strcmp(str, "localhost") == 0) {
-        *addr = htonl(INADDR_LOOPBACK);
+        *addr = lwip_htonl(INADDR_LOOPBACK);
     } else {
         struct hostent *hp;
-        if ((*addr = inet_addr(str)) == htonl(INADDR_NONE)) {
-            if (!(hp = gethostbyname(str))) {
+        if ((*addr = ipaddr_addr(str)) == lwip_htonl(INADDR_NONE)) {
+            if (!(hp = lwip_gethostbyname(str))) {
                 return 0;
             }
             *addr = *(unsigned long *)hp->h_addr;
@@ -980,10 +980,10 @@ rfbListenOnTCPPort(int port,
 
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
+    addr.sin_port = lwip_htons(port);
     addr.sin_addr.s_addr = iface;
 
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == RFB_INVALID_SOCKET) {
+    if ((sock = lwip_socket(AF_INET, SOCK_STREAM, 0)) == RFB_INVALID_SOCKET) {
 	return RFB_INVALID_SOCKET;
     }
     if (lwip_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
@@ -991,11 +991,11 @@ rfbListenOnTCPPort(int port,
 	rfbCloseSocket(sock);
 	return RFB_INVALID_SOCKET;
     }
-    if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+    if (lwip_bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
 	rfbCloseSocket(sock);
 	return RFB_INVALID_SOCKET;
     }
-    if (listen(sock, 32) < 0) {
+    if (lwip_listen(sock, 32) < 0) {
 	rfbCloseSocket(sock);
 	return RFB_INVALID_SOCKET;
     }
@@ -1032,7 +1032,7 @@ rfbListenOnTCP6Port(int port,
     
     /* loop through all the results and bind to the first we can */
     for(p = servinfo; p != NULL; p = p->ai_next) {
-        if ((sock = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) < 0) {
+        if ((sock = lwip_socket(p->ai_family, p->ai_socktype, p->ai_protocol)) < 0) {
             continue;
         }
 
@@ -1053,7 +1053,7 @@ rfbListenOnTCP6Port(int port,
 	  return RFB_INVALID_SOCKET;
 	}
 
-	if (bind(sock, p->ai_addr, p->ai_addrlen) < 0) {
+	if (lwip_bind(sock, p->ai_addr, p->ai_addrlen) < 0) {
 	  rfbCloseSocket(sock);
 	  continue;
 	}
@@ -1070,7 +1070,7 @@ rfbListenOnTCP6Port(int port,
     /* all done with this structure now */
     freeaddrinfo(servinfo);
 
-    if (listen(sock, 32) < 0) {
+    if (lwip_listen(sock, 32) < 0) {
         rfbLogPerror("rfbListenOnTCP6Port: error in listen on IPv6 socket");
 	rfbCloseSocket(sock);
 	return RFB_INVALID_SOCKET;
@@ -1104,11 +1104,11 @@ rfbConnectToTcpAddr(char *host,
 
     /* loop through all the results and connect to the first we can */
     for(p = servinfo; p != NULL; p = p->ai_next) {
-        if ((sock = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == RFB_INVALID_SOCKET)
+        if ((sock = lwip_socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == RFB_INVALID_SOCKET)
             continue;
 
 	if (sock_set_nonblocking(sock, TRUE, rfbErr)) {
-	    if (connect(sock, p->ai_addr, p->ai_addrlen) == 0) {
+	    if (lwip_connect(sock, p->ai_addr, p->ai_addrlen) == 0) {
 		break;
 	    } else {
 #ifdef WIN32
@@ -1141,18 +1141,18 @@ rfbConnectToTcpAddr(char *host,
 
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
+    addr.sin_port = lwip_htons(port);
 
-    if ((addr.sin_addr.s_addr = inet_addr(host)) == htonl(INADDR_NONE))
+    if ((addr.sin_addr.s_addr = ipaddr_addr(host)) == lwip_htonl(INADDR_NONE))
     {
-	if (!(hp = gethostbyname(host))) {
+	if (!(hp = lwip_gethostbyname(host))) {
 	    errno = EINVAL;
 	    return RFB_INVALID_SOCKET;
 	}
 	addr.sin_addr.s_addr = *(unsigned long *)hp->h_addr;
     }
 
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == RFB_INVALID_SOCKET) {
+    if ((sock = lwip_socket(AF_INET, SOCK_STREAM, 0)) == RFB_INVALID_SOCKET) {
 	return RFB_INVALID_SOCKET;
     }
 
@@ -1161,7 +1161,7 @@ rfbConnectToTcpAddr(char *host,
 	return RFB_INVALID_SOCKET;
     }
 
-    if (connect(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+    if (lwip_connect(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
 #ifdef WIN32
 	errno=WSAGetLastError();
 #endif
@@ -1191,17 +1191,17 @@ rfbListenOnUDPPort(int port,
 
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
+    addr.sin_port = lwip_htons(port);
     addr.sin_addr.s_addr = iface;
 
-    if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == RFB_INVALID_SOCKET) {
+    if ((sock = lwip_socket(AF_INET, SOCK_DGRAM, 0)) == RFB_INVALID_SOCKET) {
 	return RFB_INVALID_SOCKET;
     }
     if (lwip_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
 		   (const char *)&one, sizeof(one)) < 0) {
 	return RFB_INVALID_SOCKET;
     }
-    if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+    if (lwip_bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
 	return RFB_INVALID_SOCKET;
     }
 

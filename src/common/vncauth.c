@@ -78,37 +78,37 @@ static unsigned char fixedkey[8] = {23,82,107,6,35,78,88,7};
 int
 rfbEncryptAndStorePasswd(char *passwd, char *fname)
 {
-    FILE *fp;
-    unsigned int i;
-    unsigned char encryptedPasswd[8];
-    int out_len;
+//     FILE *fp;
+//     unsigned int i;
+//     unsigned char encryptedPasswd[8];
+//     int out_len;
 
-    if ((fp = fopen(fname,"w")) == NULL) return 1;
+//     if ((fp = fopen(fname,"w")) == NULL) return 1;
 
-	/* windows security sux */
-#ifndef WIN32
-    fchmod(fileno(fp), S_IRUSR|S_IWUSR);
-#endif
+// 	/* windows security sux */
+// #ifndef WIN32
+//     fchmod(fileno(fp), S_IRUSR|S_IWUSR);
+// #endif
 
-    /* pad password with nulls */
+//     /* pad password with nulls */
 
-    for (i = 0; i < 8; i++) {
-	if (i < strlen(passwd)) {
-	    encryptedPasswd[i] = passwd[i];
-	} else {
-	    encryptedPasswd[i] = 0;
-	}
-    }
+//     for (i = 0; i < 8; i++) {
+// 	if (i < strlen(passwd)) {
+// 	    encryptedPasswd[i] = passwd[i];
+// 	} else {
+// 	    encryptedPasswd[i] = 0;
+// 	}
+//     }
 
-    /* Do encryption in-place - this way we overwrite our copy of the plaintext
-       password */
-    encrypt_rfbdes(encryptedPasswd, &out_len, fixedkey, encryptedPasswd, sizeof(encryptedPasswd));
+//     /* Do encryption in-place - this way we overwrite our copy of the plaintext
+//        password */
+//     encrypt_rfbdes(encryptedPasswd, &out_len, fixedkey, encryptedPasswd, sizeof(encryptedPasswd));
 
-    for (i = 0; i < 8; i++) {
-	putc(encryptedPasswd[i], fp);
-    }
+//     for (i = 0; i < 8; i++) {
+// 	putc(encryptedPasswd[i], fp);
+//     }
 
-    fclose(fp);
+//     fclose(fp);
     return 0;
 }
 
@@ -161,17 +161,17 @@ rfbDecryptPasswdFromFile(char *fname)
 void
 rfbRandomBytes(unsigned char *bytes)
 {
-    int i;
-    static rfbBool s_srandom_called = FALSE;
+    // int i;
+    // static rfbBool s_srandom_called = FALSE;
 
-    if (!s_srandom_called) {
-	srandom((unsigned int)time(NULL) ^ (unsigned int)getpid());
-	s_srandom_called = TRUE;
-    }
+    // if (!s_srandom_called) {
+	// srandom((unsigned int)time(NULL) ^ (unsigned int)getpid());
+	// s_srandom_called = TRUE;
+    // }
 
-    for (i = 0; i < CHALLENGESIZE; i++) {
-	bytes[i] = (unsigned char)(random() & 255);
-    }
+    // for (i = 0; i < CHALLENGESIZE; i++) {
+	// bytes[i] = (unsigned char)(random() & 255);
+    // }
 }
 
 #endif

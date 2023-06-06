@@ -36,13 +36,13 @@ rfbBool sock_set_nonblocking(rfbSocket sock, rfbBool non_blocking, void (*log)(c
   if(ioctlsocket(sock, FIONBIO, &block) == SOCKET_ERROR) {
     errno=WSAGetLastError();
 #else
-  int flags = fcntl(sock, F_GETFL);
+  int flags = lwip_fcntl(sock, F_GETFL);
   int new_flags;
   if(non_blocking)
       new_flags = flags | O_NONBLOCK;
   else
       new_flags = flags & ~O_NONBLOCK;
-  if(flags < 0 || fcntl(sock, F_SETFL, new_flags) < 0) {
+  if(flags < 0 || lwip_fcntl(sock, F_SETFL, new_flags) < 0) {
 #endif
     log("Setting socket to %sblocking mode failed: %s\n", non_blocking ? "non-" : "", strerror(errno));
     return FALSE;
@@ -64,14 +64,14 @@ rfbBool sock_wait_for_connected(int socket, unsigned int timeout_seconds)
   FD_SET(socket, &writefds);
   FD_ZERO(&exceptfds);
   FD_SET(socket, &exceptfds);
-  if (select(socket+1, NULL, &writefds, &exceptfds, &timeout)==1) {
+  if (lwip_select(socket+1, NULL, &writefds, &exceptfds, &timeout)==1) {
 #ifdef WIN32
     if (FD_ISSET(socket, &exceptfds))
       return FALSE;
 #else
     int so_error;
     socklen_t len = sizeof so_error;
-    getsockopt(socket, SOL_SOCKET, SO_ERROR, &so_error, &len);
+    lwip_getsockopt(socket, SOL_SOCKET, SO_ERROR, &so_error, &len);
     if (so_error!=0)
       return FALSE;
 #endif

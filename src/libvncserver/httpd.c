@@ -181,7 +181,7 @@ rfbHttpCheckFds(rfbScreenInfoPtr rfbScreen)
     }
     tv.tv_sec = 0;
     tv.tv_usec = 0;
-    nfds = select(rfbMax(rfbScreen->httpListen6Sock, rfbMax(rfbScreen->httpSock,rfbScreen->httpListenSock)) + 1, &fds, NULL, NULL, &tv);
+    nfds = lwip_select(rfbMax(rfbScreen->httpListen6Sock, rfbMax(rfbScreen->httpSock,rfbScreen->httpListenSock)) + 1, &fds, NULL, NULL, &tv);
     if (nfds == 0) {
 	return;
     }
@@ -202,13 +202,13 @@ rfbHttpCheckFds(rfbScreenInfoPtr rfbScreen)
 	if (rfbScreen->httpSock != RFB_INVALID_SOCKET) rfbCloseSocket(rfbScreen->httpSock);
 
 	if(FD_ISSET(rfbScreen->httpListenSock, &fds)) {
-	    if ((rfbScreen->httpSock = accept(rfbScreen->httpListenSock, (struct sockaddr *)&addr, &addrlen)) == RFB_INVALID_SOCKET) {
+	    if ((rfbScreen->httpSock = lwip_accept(rfbScreen->httpListenSock, (struct sockaddr *)&addr, &addrlen)) == RFB_INVALID_SOCKET) {
 	      rfbLogPerror("httpCheckFds: accept");
 	      return;
 	    }
 	}
 	else if(FD_ISSET(rfbScreen->httpListen6Sock, &fds)) {
-	    if ((rfbScreen->httpSock = accept(rfbScreen->httpListen6Sock, (struct sockaddr *)&addr, &addrlen)) == RFB_INVALID_SOCKET) {
+	    if ((rfbScreen->httpSock = lwip_accept(rfbScreen->httpListen6Sock, (struct sockaddr *)&addr, &addrlen)) == RFB_INVALID_SOCKET) {
 	      rfbLogPerror("httpCheckFds: accept");
 	      return;
 	    }
@@ -372,11 +372,11 @@ httpProcessInput(rfbScreenInfoPtr rfbScreen)
 	return;
     }
 
-    if (sscanf(buf, "GET %s HTTP/1.", fname) != 1) {
-	rfbErr("httpd: couldn't parse GET line\n");
-	httpCloseSock(rfbScreen);
-	return;
-    }
+  //   if (sscanf(buf, "GET %s HTTP/1.", fname) != 1) {
+	// rfbErr("httpd: couldn't parse GET line\n");
+	// httpCloseSock(rfbScreen);
+	// return;
+  //   }
 
     if (fname[0] != '/') {
 	rfbErr("httpd: filename didn't begin with '/'\n");
@@ -386,7 +386,7 @@ httpProcessInput(rfbScreenInfoPtr rfbScreen)
     }
 
 
-    getpeername(rfbScreen->httpSock, (struct sockaddr *)&addr, &addrlen);
+    lwip_getpeername(rfbScreen->httpSock, (struct sockaddr *)&addr, &addrlen);
 #ifdef LIBVNCSERVER_IPv6
     {
         char host[1024];

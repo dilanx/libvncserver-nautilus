@@ -713,11 +713,11 @@ rfbProcessClientProtocolVersion(rfbClientPtr cl)
     }
 
     pv[sz_rfbProtocolVersionMsg] = 0;
-    if (sscanf(pv,rfbProtocolVersionFormat,&major_,&minor_) != 2) {
-	rfbErr("rfbProcessClientProtocolVersion: not a valid RFB client: %s\n", pv);
-	rfbCloseClient(cl);
-	return;
-    }
+    // if (sscanf(pv,rfbProtocolVersionFormat,&major_,&minor_) != 2) {
+	// rfbErr("rfbProcessClientProtocolVersion: not a valid RFB client: %s\n", pv);
+	// rfbCloseClient(cl);
+	// return;
+    // }
     rfbLog("Client Protocol Version %d.%d\n", major_, minor_);
 
     if (major_ != rfbProtocolMajorVersion) {
@@ -2720,7 +2720,7 @@ rfbProcessClientNormalMessage(rfbClientPtr cl)
         msg.ft.size         = Swap32IfLE(msg.ft.size);
         msg.ft.length       = Swap32IfLE(msg.ft.length);
         /* record statistics in rfbProcessFileTransfer as length is filled with garbage when it is not valid */
-        rfbProcessFileTransfer(cl, msg.ft.contentType, msg.ft.contentParam, msg.ft.size, msg.ft.length);
+        //rfbProcessFileTransfer(cl, msg.ft.contentType, msg.ft.contentParam, msg.ft.size, msg.ft.length);
         return;
 
     case rfbSetSW:

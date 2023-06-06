@@ -100,18 +100,18 @@ static void sraSpanPrint(const sraSpan *s);
 
 static void
 sraSpanListPrint(const sraSpanList *l) {
-  sraSpan *curr;
-  if (!l) {
-	  printf("NULL");
-	  return;
-  }
-  curr = l->front._next;
-  printf("[");
-  while (curr != &(l->back)) {
-    sraSpanPrint(curr);
-    curr = curr->_next;
-  }
-  printf("]");
+  // sraSpan *curr;
+  // if (!l) {
+	//   printf("NULL");
+	//   return;
+  // }
+  // curr = l->front._next;
+  // printf("[");
+  // while (curr != &(l->back)) {
+  //   sraSpanPrint(curr);
+  //   curr = curr->_next;
+  // }
+  // printf("]");
 }
 
 void
