@@ -38,7 +38,8 @@ extern "C"
 {
 #endif
 
-#include <nautilus/nautilus.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <rfb/rfbproto.h>
 
